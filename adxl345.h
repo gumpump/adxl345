@@ -90,8 +90,9 @@ typedef union
  * \param sensor adxl345 instance to be initialized
  * \param i2c_port I²C instance specifier, either \ref i2c0 or \ref i2c1
  * \param i2c_addr I²C address of the sensor
+ * \return true if succeeded, false if failed
 */
-void adxl345_init (adxl345_sensor *sensor, i2c_inst_t *i2c_port, uint8_t i2c_addr);
+bool adxl345_init (adxl345_sensor *sensor, i2c_inst_t *i2c_port, uint8_t i2c_addr);
 
 /*! \brief Send a single byte to the given adxl345 sensor
  *  \ingroup accel
@@ -106,6 +107,20 @@ void adxl345_init (adxl345_sensor *sensor, i2c_inst_t *i2c_port, uint8_t i2c_add
 */
 int adxl345_write (adxl345_sensor *sensor, uint8_t reg_addr, uint8_t command, bool no_stop);
 
+/*! \brief Send a single byte to the given adxl345 sensor with atimeout (in seconds)
+ *  \ingroup accel
+ *
+ * Writes a \p command into \p reg_addr of \p sensor with a \p timeout_s (in seconds)
+ *
+ * \param sensor adxl345 instance to be written to
+ * \param reg_addr Adress of the register to write in (not the adress of the device)
+ * \param command Single byte to write
+ * \param no_stop Sending stop signal (false = sending, true = not sending)
+ * \param timeout_s Amount of time (in seconds) the function tries to write
+ * \return Bytes written
+*/
+int adxl345_write_timeout (adxl345_sensor *sensor, uint8_t reg_addr, uint8_t command, bool no_stop, unsigned int timeout_s);
+
 /*! \brief Reads the acceleration and FIFO status of the given adxl345 sensor
  *  \ingroup accel
  *
@@ -115,7 +130,42 @@ int adxl345_write (adxl345_sensor *sensor, uint8_t reg_addr, uint8_t command, bo
  * \param data Buffer the data will be saved in
  * \return Bytes read
 */
-int adxl345_read (adxl345_sensor *sensor, adxl345_data *data);
+int adxl345_read_8 (adxl345_sensor *sensor, adxl345_data *data);
+
+/*! \brief Reads the acceleration and FIFO status of the given adxl345 sensor with a timeout (in seconds)
+ *  \ingroup accel
+ *
+ * Reads \p data out of \p sensor with a \p timeout_s (in seconds)
+ *
+ * \param sensor adxl345 instance to be read from
+ * \param data Buffer the data will be saved in
+ * \param timeout_s Amount of time (in seconds) the function tries to read
+ * \return Bytes read
+*/
+int adxl345_read_8_timeout (adxl345_sensor *sensor, adxl345_data *data, unsigned int timeout_s);
+
+/*! \brief Reads only the acceleration of the given adxl345 sensor
+ *  \ingroup accel
+ *
+ * Reads \p data out of \p sensor
+ *
+ * \param sensor adxl345 instance to be read from
+ * \param data Buffer the data will be saved in
+ * \return Bytes read
+*/
+int adxl345_read_6 (adxl345_sensor *sensor, adxl345_data *data);
+
+/*! \brief Reads only the acceleration of the given adxl345 sensor
+ *  \ingroup accel
+ *
+ * Reads \p data out of \p sensor with a \p timeout_s (in seconds)
+ *
+ * \param sensor adxl345 instance to be read from
+ * \param data Buffer the data will be saved in
+ * \param timeout_s Amount of time (in seconds) the function tries to read
+ * \return Bytes read
+*/
+int adxl345_read_6_timeout (adxl345_sensor *sensor, adxl345_data *data, unsigned int timeout_s);
 
 /*! \brief Gets the acceleration for the x-axis out of the given data
  *  \ingroup accel
