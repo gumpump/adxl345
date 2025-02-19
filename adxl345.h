@@ -64,6 +64,48 @@
 */
 #define ADXL345_REG_VAL				0x32
 
+#define ADXL345_ACT_RELATIVE		128
+#define ADXL345_ACT_ENABLE_X		64
+#define ADXL345_ACT_ENABLE_Y		32
+#define ADXL345_ACT_ENABLE_Z		16
+#define ADXL345_ACT_ENABLE_ALL		112
+#define ADXL345_INACT_RELATIVE		8
+#define ADXL345_INACT_ENABLE_X		4
+#define ADXL345_INACT_ENABLE_Y		2
+#define ADXL345_INACT_ENABLE_Z		1
+#define ADXL345_INACT_ENABLE_ALL	7
+
+#define ADXL345_TAP_SUPRESS			8
+#define ADXL345_TAP_ENABLE_X		4
+#define ADXL345_TAP_ENABLE_Y		2
+#define ADXL345_TAP_ENABLE_Z		1
+
+#define ADXL345_BW_1600				15
+#define ADXL345_BW_800				14
+#define ADXL345_BW_400				13
+#define ADXL345_BW_200				12
+#define ADXL345_BW_100				11
+#define ADXL345_BW_50				10
+#define ADXL345_BW_25				9
+#define ADXL345_BW_12_5				8
+#define ADXL345_BW_6_25				7
+#define ADXL345_BW_3_13				6
+#define ADXL345_BW_1_56				5
+#define ADXL345_BW_0_78				4
+#define ADXL345_BW_0_39				3
+#define ADXL345_BW_0_20				2
+#define ADXL345_BW_0_10				1
+#define ADXL345_BW_0_05				0
+
+#define ADXL345_INT_DATA_READY		128
+#define ADXL345_INT_SINGLE_TAP		64
+#define ADXL345_INT_DOUBLE_TAP		32
+#define ADXL345_INT_ACTIVITY		16
+#define ADXL345_INT_INACTIVITY		8
+#define ADXL345_INT_FREE_FALL		4
+#define	ADXL345_INT_WATERMARK		2
+#define ADXL345_INT_OVERRUN			1
+
 /*! \brief Represents a single adxl345 sensor on the I²C bus
  *  \ingroup accel
 */
@@ -220,5 +262,29 @@ float adxl345_get_pitch (adxl345_data *data);
 // I think it's easier to use x and y instead of roll and pitch
 #define adxl345_get_rot_x(data) adxl345_get_roll(data)
 #define adxl345_get_rot_y(data) adxl345_get_pitch(data)
+
+// New stuff
+bool adxl345_tap_set_threshold (adxl345_sensor *sensor, uint8_t threshold);
+//bool adxl345_set_offset (adxl345_sensor *sensor, uint8_t x, uint8_t y, uint8_t z);
+//#define adxl345_set_offset_x(s,x)	adxl345_set_offset(s,x,0,0)
+//#define adxl345_set_offset_y(s,y)	adxl345_set_offset(s,0,y,0)
+//#define adxl345_set_offset_z(s,z)	adxl345_set_offset(s,0,0,z)
+bool adxl345_tap_set_duration (adxl345_sensor *sensor, uint8_t duration);
+bool adxl345_tap_set_latent (adxl345_sensor *sensor, uint8_t latent);
+bool adxl345_tap_set_window (adxl345_sensor *sensor, uint8_t window);
+bool adxl345_activity_set_threshold (adxl345_sensor *sensor, uint8_t threshold);
+bool adxl345_inactivity_set_threshold (adxl345_sensor *sensor, uint8_t threshold);
+bool adxl345_inactivity_set_time (adxl345_sensor *sensor, uint8_t time);
+bool adxl345_act_inact_settings (adxl345_sensor *sensor, uint8_t flags); // Rename
+bool adxl345_freefall_set_threshold (adxl345_sensor *sensor, uint8_t threshold);
+bool adxl345_freefall_set_time (adxl345_sensor *sensor, uint8_t time);
+bool adxl345_tap_settings (adxl345_sensor *sensor, uint8_t flags); // Rename
+// Function for ACT_TAP_STATUS
+bool adxl345_set_bandwidth (adxl345_sensor *sensor, bool low_power, uint8_t bandwidth);
+// Function for POWER_CTL
+bool adxl345_enable_interrupts (adxl345_sensor *sensor, uint8_t flags);
+bool adxl345_map_interrupts (adxl345_sensor *sensor, uint8_t flags);
+bool adxl345_reset_interrupts (adxl345_sensor *sensor);
+// Function for DATA_FORMAT
 
 #endif
