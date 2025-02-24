@@ -265,10 +265,10 @@ float adxl345_get_pitch (adxl345_data *data);
 
 // New stuff
 bool adxl345_tap_set_threshold (adxl345_sensor *sensor, uint8_t threshold);
-//bool adxl345_set_offset (adxl345_sensor *sensor, uint8_t x, uint8_t y, uint8_t z);
-//#define adxl345_set_offset_x(s,x)	adxl345_set_offset(s,x,0,0)
-//#define adxl345_set_offset_y(s,y)	adxl345_set_offset(s,0,y,0)
-//#define adxl345_set_offset_z(s,z)	adxl345_set_offset(s,0,0,z)
+bool adxl345_set_offset (adxl345_sensor *sensor, uint8_t x, uint8_t y, uint8_t z);
+#define adxl345_set_offset_x(s,x)	adxl345_set_offset(s,x,0,0)
+#define adxl345_set_offset_y(s,y)	adxl345_set_offset(s,0,y,0)
+#define adxl345_set_offset_z(s,z)	adxl345_set_offset(s,0,0,z)
 bool adxl345_tap_set_duration (adxl345_sensor *sensor, uint8_t duration);
 bool adxl345_tap_set_latent (adxl345_sensor *sensor, uint8_t latent);
 bool adxl345_tap_set_window (adxl345_sensor *sensor, uint8_t window);

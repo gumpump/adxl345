@@ -15,6 +15,8 @@
 #define ADXL345_V_MAX 32767
 #define ADXL345_V_OFFSET 65536
 
+#define ADXL345_CMD_SIZE(size) (size+1)
+
 bool adxl345_init (adxl345_sensor *sensor, i2c_inst_t *i2c_port, uint8_t i2c_addr)
 {
 	if (!sensor)
@@ -129,7 +131,7 @@ float adxl345_get_pitch (adxl345_data *data)
 
 bool adxl345_tap_set_threshold (adxl345_sensor *sensor, uint8_t threshold)
 {
-	if (adxl345_write_timeout (sensor, ADXL345_REG_THRESH_TAP, threshold, false, 1) < 2)
+	if (adxl345_write_timeout (sensor, ADXL345_REG_THRESH_TAP, threshold, false, 1) < ADXL345_CMD_SIZE (1))
 	{
 		return false;
 	}
@@ -137,14 +139,29 @@ bool adxl345_tap_set_threshold (adxl345_sensor *sensor, uint8_t threshold)
 	return true;
 }
 
-//bool adxl345_set_offset (adxl345_sensor *sensor, uint8_t x, uint8_t y, uint8_t z);
-//#define adxl345_set_offset_x(s,x)	adxl345_set_offset(s,x,0,0)
-//#define adxl345_set_offset_y(s,y)	adxl345_set_offset(s,0,y,0)
-//#define adxl345_set_offset_z(s,z)	adxl345_set_offset(s,0,0,z)
+bool adxl345_set_offset (adxl345_sensor *sensor, uint8_t x, uint8_t y, uint8_t z)
+{
+	if (adxl345_write_timeout (sensor, ADXL345_REG_OFSX, x, false, 1) < ADXL345_CMD_SIZE (1))
+	{
+		return false;
+	}
+
+	if (adxl345_write_timeout (sensor, ADXL345_REG_OFSY, y, false, 1) < ADXL345_CMD_SIZE (1))
+	{
+		return false;
+	}
+
+	if (adxl345_write_timeout (sensor, ADXL345_REG_OFSZ, z, false, 1) < ADXL345_CMD_SIZE (1))
+	{
+		return false;
+	}
+
+	return true;
+}
 
 bool adxl345_tap_set_duration (adxl345_sensor *sensor, uint8_t duration)
 {
-	if (adxl345_write_timeout (sensor, ADXL345_REG_DUR, duration, false, 1) < 2)
+	if (adxl345_write_timeout (sensor, ADXL345_REG_DUR, duration, false, 1) < ADXL345_CMD_SIZE (1))
 	{
 		return false;
 	}
@@ -154,7 +171,7 @@ bool adxl345_tap_set_duration (adxl345_sensor *sensor, uint8_t duration)
 
 bool adxl345_tap_set_latent (adxl345_sensor *sensor, uint8_t latent)
 {
-	if (adxl345_write_timeout (sensor, ADXL345_REG_LATENT, latent, false, 1) < 2)
+	if (adxl345_write_timeout (sensor, ADXL345_REG_LATENT, latent, false, 1) < ADXL345_CMD_SIZE (1))
 	{
 		return false;
 	}
@@ -164,7 +181,7 @@ bool adxl345_tap_set_latent (adxl345_sensor *sensor, uint8_t latent)
 
 bool adxl345_tap_set_window (adxl345_sensor *sensor, uint8_t window)
 {
-	if (adxl345_write_timeout (sensor, ADXL345_REG_WINDOW, window, false, 1) < 2)
+	if (adxl345_write_timeout (sensor, ADXL345_REG_WINDOW, window, false, 1) < ADXL345_CMD_SIZE (1))
 	{
 		return false;
 	}
@@ -174,7 +191,7 @@ bool adxl345_tap_set_window (adxl345_sensor *sensor, uint8_t window)
 
 bool adxl345_activity_set_threshold (adxl345_sensor *sensor, uint8_t threshold)
 {
-	if (adxl345_write_timeout (sensor, ADXL345_REG_THRESH_ACT, threshold, false, 1) < 2)
+	if (adxl345_write_timeout (sensor, ADXL345_REG_THRESH_ACT, threshold, false, 1) < ADXL345_CMD_SIZE (1))
 	{
 		return false;
 	}
@@ -184,7 +201,7 @@ bool adxl345_activity_set_threshold (adxl345_sensor *sensor, uint8_t threshold)
 
 bool adxl345_inactivity_set_threshold (adxl345_sensor *sensor, uint8_t threshold)
 {
-	if (adxl345_write_timeout (sensor, ADXL345_REG_THRESH_INACT, threshold, false, 1) < 2)
+	if (adxl345_write_timeout (sensor, ADXL345_REG_THRESH_INACT, threshold, false, 1) < ADXL345_CMD_SIZE (1))
 	{
 		return false;
 	}
@@ -194,7 +211,7 @@ bool adxl345_inactivity_set_threshold (adxl345_sensor *sensor, uint8_t threshold
 
 bool adxl345_inactivity_set_time (adxl345_sensor *sensor, uint8_t time)
 {
-	if (adxl345_write_timeout (sensor, ADXL345_REG_TIME_INACT, time, false, 1) < 2)
+	if (adxl345_write_timeout (sensor, ADXL345_REG_TIME_INACT, time, false, 1) < ADXL345_CMD_SIZE (1))
 	{
 		return false;
 	}
@@ -206,7 +223,7 @@ bool adxl345_inactivity_set_time (adxl345_sensor *sensor, uint8_t time)
 
 bool adxl345_freefall_set_threshold (adxl345_sensor *sensor, uint8_t threshold)
 {
-	if (adxl345_write_timeout (sensor, ADXL345_REG_THRESH_FF, threshold, false, 1) < 2)
+	if (adxl345_write_timeout (sensor, ADXL345_REG_THRESH_FF, threshold, false, 1) < ADXL345_CMD_SIZE (1))
 	{
 		return false;
 	}
@@ -216,7 +233,7 @@ bool adxl345_freefall_set_threshold (adxl345_sensor *sensor, uint8_t threshold)
 
 bool adxl345_freefall_set_time (adxl345_sensor *sensor, uint8_t time)
 {
-	if (adxl345_write_timeout (sensor, ADXL345_REG_TIME_FF, time, false, 1) < 2)
+	if (adxl345_write_timeout (sensor, ADXL345_REG_TIME_FF, time, false, 1) < ADXL345_CMD_SIZE (1))
 	{
 		return false;
 	}
@@ -238,7 +255,7 @@ bool adxl345_set_bandwidth (adxl345_sensor *sensor, bool low_power, uint8_t band
 
 	command += bandwidth;
 
-	if (adxl345_write_timeout (sensor, ADXL345_REG_BW_RATE, command, false, 1) < 2)
+	if (adxl345_write_timeout (sensor, ADXL345_REG_BW_RATE, command, false, 1) < ADXL345_CMD_SIZE (1))
 	{
 		return false;
 	}
@@ -254,7 +271,7 @@ bool adxl345_enable_interrupts (adxl345_sensor *sensor, uint8_t flags)
 
 	command += flags;
 
-	if (adxl345_write_timeout (sensor, ADXL345_REG_INT_ENABLE, command, false, 1) < 2)
+	if (adxl345_write_timeout (sensor, ADXL345_REG_INT_ENABLE, command, false, 1) < ADXL345_CMD_SIZE (1))
 	{
 		return false;
 	}
@@ -268,7 +285,7 @@ bool adxl345_map_interrupts (adxl345_sensor *sensor, uint8_t flags)
 
 	command += flags;
 
-	if (adxl345_write_timeout (sensor, ADXL345_REG_INT_MAP, command, false, 1) < 2)
+	if (adxl345_write_timeout (sensor, ADXL345_REG_INT_MAP, command, false, 1) < ADXL345_CMD_SIZE (1))
 	{
 		return false;
 	}
