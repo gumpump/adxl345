@@ -115,6 +115,16 @@
 #define	ADXL345_INT_WATERMARK		2
 #define ADXL345_INT_OVERRUN			1
 
+#define ADXL345_DATA_SELF_TEST		128
+#define ADXL345_DATA_SPI_3W			64
+#define ADXL345_DATA_INT_INVERT		32
+#define ADXL345_DATA_FULL_RES		8
+#define ADXL345_DATA_MSB			4
+#define ADXL345_DATA_RANGE_16G		3
+#define ADXL345_DATA_RANGE_8G		2
+#define ADXL345_DATA_RANGE_4G		1
+#define ADXL345_DATA_RANGE_2G		0
+
 /*! \brief Represents a single adxl345 sensor on the I²C bus
  *  \ingroup accel
 */
@@ -294,6 +304,6 @@ bool adxl345_power_settings (adxl345_sensor *sensor, uint8_t flags);
 bool adxl345_enable_interrupts (adxl345_sensor *sensor, uint8_t flags);
 bool adxl345_map_interrupts (adxl345_sensor *sensor, uint8_t flags);
 bool adxl345_reset_interrupts (adxl345_sensor *sensor);
-// Function for DATA_FORMAT
+bool adxl345_data_settings (adxl345_sensor *sensor, uint8_t flags);
 
 #endif
