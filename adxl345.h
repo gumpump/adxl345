@@ -278,7 +278,7 @@ bool adxl345_inactivity_set_time (adxl345_sensor *sensor, uint8_t time);
 bool adxl345_act_inact_settings (adxl345_sensor *sensor, uint8_t flags);
 bool adxl345_freefall_set_threshold (adxl345_sensor *sensor, uint8_t threshold);
 bool adxl345_freefall_set_time (adxl345_sensor *sensor, uint8_t time);
-bool adxl345_tap_settings (adxl345_sensor *sensor, uint8_t flags); // Rename
+bool adxl345_tap_settings (adxl345_sensor *sensor, uint8_t flags);
 // Function for ACT_TAP_STATUS
 bool adxl345_set_bandwidth (adxl345_sensor *sensor, bool low_power, uint8_t bandwidth);
 // Function for POWER_CTL

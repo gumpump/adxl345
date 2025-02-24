@@ -249,7 +249,16 @@ bool adxl345_freefall_set_time (adxl345_sensor *sensor, uint8_t time)
 	return true;
 }
 
-// bool adxl345_tap_settings (adxl345_sensor *sensor, uint8_t flags); // Rename
+bool adxl345_tap_settings (adxl345_sensor *sensor, uint8_t flags)
+{
+	if (adxl345_write_timeout (sensor, ADXL345_REG_TAP_AXES, flags, false, 1) < ADXL345_CMD_SIZE (1))
+	{
+		return false;
+	}
+
+	return true;
+}
+
 // Function for ACT_TAP_STATUS
 
 bool adxl345_set_bandwidth (adxl345_sensor *sensor, bool low_power, uint8_t bandwidth)
