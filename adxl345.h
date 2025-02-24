@@ -97,6 +97,15 @@
 #define ADXL345_BW_0_10				1
 #define ADXL345_BW_0_05				0
 
+#define ADXL345_POWER_LINK			32
+#define ADXL345_POWER_AUTO_SLEEP	16
+#define ADXL345_POWER_MEASURE		8
+#define ADXL345_POWER_SLEEP			4
+#define ADXL345_POWER_S_1HZ			3
+#define ADXL345_POWER_S_2HZ			2
+#define ADXL345_POWER_S_4HZ			1
+#define ADXL345_POWER_S_8HZ			0
+
 #define ADXL345_INT_DATA_READY		128
 #define ADXL345_INT_SINGLE_TAP		64
 #define ADXL345_INT_DOUBLE_TAP		32
@@ -281,7 +290,7 @@ bool adxl345_freefall_set_time (adxl345_sensor *sensor, uint8_t time);
 bool adxl345_tap_settings (adxl345_sensor *sensor, uint8_t flags);
 // Function for ACT_TAP_STATUS
 bool adxl345_set_bandwidth (adxl345_sensor *sensor, bool low_power, uint8_t bandwidth);
-// Function for POWER_CTL
+bool adxl345_power_settings (adxl345_sensor *sensor, uint8_t flags);
 bool adxl345_enable_interrupts (adxl345_sensor *sensor, uint8_t flags);
 bool adxl345_map_interrupts (adxl345_sensor *sensor, uint8_t flags);
 bool adxl345_reset_interrupts (adxl345_sensor *sensor);

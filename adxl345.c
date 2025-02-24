@@ -129,6 +129,8 @@ float adxl345_get_pitch (adxl345_data *data)
 	return atan2 (-x, sqrt (y * y + z * z)) * 57.3;
 }
 
+// NEW STUFF
+
 bool adxl345_tap_set_threshold (adxl345_sensor *sensor, uint8_t threshold)
 {
 	if (adxl345_write_timeout (sensor, ADXL345_REG_THRESH_TAP, threshold, false, 1) < ADXL345_CMD_SIZE (1))
@@ -280,15 +282,19 @@ bool adxl345_set_bandwidth (adxl345_sensor *sensor, bool low_power, uint8_t band
 	return true;
 }
 
-// Function for POWER_CTL
+bool adxl345_power_settings (adxl345_sensor *sensor, uint8_t flags)
+{
+	if (adxl345_write_timeout (sensor, ADXL345_REG_POWER_CTL, flags, false, 1) < ADXL345_CMD_SIZE (1))
+	{
+		return false;
+	}
+
+	return true;
+}
 
 bool adxl345_enable_interrupts (adxl345_sensor *sensor, uint8_t flags)
 {
-	uint8_t command = 0;
-
-	command += flags;
-
-	if (adxl345_write_timeout (sensor, ADXL345_REG_INT_ENABLE, command, false, 1) < ADXL345_CMD_SIZE (1))
+	if (adxl345_write_timeout (sensor, ADXL345_REG_INT_ENABLE, flags, false, 1) < ADXL345_CMD_SIZE (1))
 	{
 		return false;
 	}
@@ -298,11 +304,7 @@ bool adxl345_enable_interrupts (adxl345_sensor *sensor, uint8_t flags)
 
 bool adxl345_map_interrupts (adxl345_sensor *sensor, uint8_t flags)
 {
-	uint8_t command = 0;
-
-	command += flags;
-
-	if (adxl345_write_timeout (sensor, ADXL345_REG_INT_MAP, command, false, 1) < ADXL345_CMD_SIZE (1))
+	if (adxl345_write_timeout (sensor, ADXL345_REG_INT_MAP, flags, false, 1) < ADXL345_CMD_SIZE (1))
 	{
 		return false;
 	}
