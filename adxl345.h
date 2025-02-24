@@ -130,7 +130,7 @@
 #define ADXL345_FIFO_MODE_FIFO		1<<6
 #define ADXL345_FIFO_MODE_BYPASS	0
 #define ADXL345_FIFO_TRIGGER_INT1	0
-#define ADXL345_FIFO_TRIGGER_INT1	1<<5
+#define ADXL345_FIFO_TRIGGER_INT2	1<<5
 
 /*! \brief Represents a single adxl345 sensor on the I²C bus
  *  \ingroup accel
