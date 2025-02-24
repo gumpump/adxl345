@@ -64,20 +64,20 @@
 */
 #define ADXL345_REG_VAL				0x32
 
-#define ADXL345_ACT_RELATIVE		128
-#define ADXL345_ACT_ENABLE_X		64
-#define ADXL345_ACT_ENABLE_Y		32
-#define ADXL345_ACT_ENABLE_Z		16
-#define ADXL345_ACT_ENABLE_ALL		112
-#define ADXL345_INACT_RELATIVE		8
-#define ADXL345_INACT_ENABLE_X		4
-#define ADXL345_INACT_ENABLE_Y		2
+#define ADXL345_ACT_RELATIVE		1<<7
+#define ADXL345_ACT_ENABLE_X		1<<6
+#define ADXL345_ACT_ENABLE_Y		1<<5
+#define ADXL345_ACT_ENABLE_Z		1<<4
+#define ADXL345_ACT_ENABLE_ALL		(ADXL345_ACT_ENABLE_X | ADXL345_ACT_ENABLE_Y | ADXL345_ACT_ENABLE_Z)
+#define ADXL345_INACT_RELATIVE		1<<3
+#define ADXL345_INACT_ENABLE_X		1<<2
+#define ADXL345_INACT_ENABLE_Y		1<<1
 #define ADXL345_INACT_ENABLE_Z		1
-#define ADXL345_INACT_ENABLE_ALL	7
+#define ADXL345_INACT_ENABLE_ALL	(ADXL345_INACT_ENABLE_X | ADXL345_INACT_ENABLE_Y | ADXL345_INACT_ENABLE_Z)
 
-#define ADXL345_TAP_SUPRESS			8
-#define ADXL345_TAP_ENABLE_X		4
-#define ADXL345_TAP_ENABLE_Y		2
+#define ADXL345_TAP_SUPRESS			1<<3
+#define ADXL345_TAP_ENABLE_X		1<<2
+#define ADXL345_TAP_ENABLE_Y		1<<1
 #define ADXL345_TAP_ENABLE_Z		1
 
 #define ADXL345_BW_1600				15
@@ -97,33 +97,40 @@
 #define ADXL345_BW_0_10				1
 #define ADXL345_BW_0_05				0
 
-#define ADXL345_POWER_LINK			32
-#define ADXL345_POWER_AUTO_SLEEP	16
-#define ADXL345_POWER_MEASURE		8
-#define ADXL345_POWER_SLEEP			4
+#define ADXL345_POWER_LINK			1<<5
+#define ADXL345_POWER_AUTO_SLEEP	1<<4
+#define ADXL345_POWER_MEASURE		1<<3
+#define ADXL345_POWER_SLEEP			1<<2
 #define ADXL345_POWER_S_1HZ			3
-#define ADXL345_POWER_S_2HZ			2
+#define ADXL345_POWER_S_2HZ			1<<1
 #define ADXL345_POWER_S_4HZ			1
 #define ADXL345_POWER_S_8HZ			0
 
-#define ADXL345_INT_DATA_READY		128
-#define ADXL345_INT_SINGLE_TAP		64
-#define ADXL345_INT_DOUBLE_TAP		32
-#define ADXL345_INT_ACTIVITY		16
-#define ADXL345_INT_INACTIVITY		8
-#define ADXL345_INT_FREE_FALL		4
-#define	ADXL345_INT_WATERMARK		2
+#define ADXL345_INT_DATA_READY		1<<7
+#define ADXL345_INT_SINGLE_TAP		1<<6
+#define ADXL345_INT_DOUBLE_TAP		1<<5
+#define ADXL345_INT_ACTIVITY		1<<4
+#define ADXL345_INT_INACTIVITY		1<<3
+#define ADXL345_INT_FREE_FALL		1<<2
+#define	ADXL345_INT_WATERMARK		1<<1
 #define ADXL345_INT_OVERRUN			1
 
-#define ADXL345_DATA_SELF_TEST		128
-#define ADXL345_DATA_SPI_3W			64
-#define ADXL345_DATA_INT_INVERT		32
-#define ADXL345_DATA_FULL_RES		8
-#define ADXL345_DATA_MSB			4
+#define ADXL345_DATA_SELF_TEST		1<<7
+#define ADXL345_DATA_SPI_3W			1<<6
+#define ADXL345_DATA_INT_INVERT		1<<5
+#define ADXL345_DATA_FULL_RES		1<<3
+#define ADXL345_DATA_MSB			1<<2
 #define ADXL345_DATA_RANGE_16G		3
-#define ADXL345_DATA_RANGE_8G		2
+#define ADXL345_DATA_RANGE_8G		1<<1
 #define ADXL345_DATA_RANGE_4G		1
 #define ADXL345_DATA_RANGE_2G		0
+
+#define ADXL345_FIFO_MODE_TRIGGER	192
+#define ADXL345_FIFO_MODE_STREAM	1<<7
+#define ADXL345_FIFO_MODE_FIFO		1<<6
+#define ADXL345_FIFO_MODE_BYPASS	0
+#define ADXL345_FIFO_TRIGGER_INT1	0
+#define ADXL345_FIFO_TRIGGER_INT1	1<<5
 
 /*! \brief Represents a single adxl345 sensor on the I²C bus
  *  \ingroup accel
@@ -305,5 +312,6 @@ bool adxl345_enable_interrupts (adxl345_sensor *sensor, uint8_t flags);
 bool adxl345_map_interrupts (adxl345_sensor *sensor, uint8_t flags);
 bool adxl345_reset_interrupts (adxl345_sensor *sensor);
 bool adxl345_data_settings (adxl345_sensor *sensor, uint8_t flags);
+bool adxl345_fifo_settings (adxl345_sensor *sensor, uint8_t flags, uint8_t samples);
 
 #endif

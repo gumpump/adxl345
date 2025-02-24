@@ -342,3 +342,18 @@ bool adxl345_data_settings (adxl345_sensor *sensor, uint8_t flags)
 
 	return true;
 }
+
+bool adxl345_fifo_settings (adxl345_sensor *sensor, uint8_t flags, uint8_t samples)
+{
+	if (samples > 31)
+	{
+		samples = 31;
+	}
+
+	if (adxl345_write_timeout (sensor, ADXL345_REG_FIFO_CTL, flags | samples, false, 1) < ADXL345_CMD_SIZE (1))
+	{
+		return false;
+	}
+
+	return true;
+}
