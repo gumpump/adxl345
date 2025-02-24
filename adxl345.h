@@ -64,12 +64,15 @@
 */
 #define ADXL345_REG_VAL				0x32
 
+// Flags for adxl345_act_inact_settings()
 #define ADXL345_ACT_RELATIVE		1<<7
+#define ADXL345_ACT_ABSOLUTE		0
 #define ADXL345_ACT_ENABLE_X		1<<6
 #define ADXL345_ACT_ENABLE_Y		1<<5
 #define ADXL345_ACT_ENABLE_Z		1<<4
 #define ADXL345_ACT_ENABLE_ALL		(ADXL345_ACT_ENABLE_X | ADXL345_ACT_ENABLE_Y | ADXL345_ACT_ENABLE_Z)
 #define ADXL345_INACT_RELATIVE		1<<3
+#define ADXL345_INACT_ABSOLUTE		0
 #define ADXL345_INACT_ENABLE_X		1<<2
 #define ADXL345_INACT_ENABLE_Y		1<<1
 #define ADXL345_INACT_ENABLE_Z		1
@@ -87,13 +90,13 @@
 #define ADXL345_BW_100				11
 #define ADXL345_BW_50				10
 #define ADXL345_BW_25				9
-#define ADXL345_BW_12_5				8
+#define ADXL345_BW_12_5				1<<3
 #define ADXL345_BW_6_25				7
 #define ADXL345_BW_3_13				6
 #define ADXL345_BW_1_56				5
-#define ADXL345_BW_0_78				4
+#define ADXL345_BW_0_78				1<<2
 #define ADXL345_BW_0_39				3
-#define ADXL345_BW_0_20				2
+#define ADXL345_BW_0_20				1<<1
 #define ADXL345_BW_0_10				1
 #define ADXL345_BW_0_05				0
 
