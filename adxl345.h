@@ -12,7 +12,324 @@
 #include "pico/stdlib.h"
 #include "hardware/i2c.h"
 
-#define ADXL345_I2C_ADDRESS 0x53
+/* ------------------------------------------------------------------------------------- */
+
+/*
+ * PLEASE READ THIS BEFORE FIRST USE
+ * ESPECIALLY IF YOU DON'T KNOW, WHAT LSB MEANS
+ * 
+ * In this context, 1 LSB represents the smallest possible step.
+ * If you have 1 unsigned Byte, you have 255 possible, non-zero values.
+ * A value of 1 stands for 1 LSB, a value of 2 for 2 LSB.
+ * If you read something like "15.6 mg / LSB", it means the following:
+ *
+ * 		If you want to set 1 g (gravitational force, not weight),
+ * 		you have to divide 1 g by 0.0156 g (15.6 mg).
+ *			1 / 0.0156 = 64,102564...
+ *		Now you round the result of this division and you got the amount
+ *		of LSBs you have to give the function.		
+ */
+
+/* ------------------------------------------------------------------------------------- */
+
+// Flags for adxl345_act_inact_settings()
+#define ADXL345_ACT_RELATIVE		1<<7
+#define ADXL345_ACT_ABSOLUTE		0		// Default
+#define ADXL345_ACT_ENABLE_X		1<<6
+#define ADXL345_ACT_ENABLE_Y		1<<5
+#define ADXL345_ACT_ENABLE_Z		1<<4
+#define ADXL345_ACT_ENABLE_ALL		(ADXL345_ACT_ENABLE_X | ADXL345_ACT_ENABLE_Y | ADXL345_ACT_ENABLE_Z)
+#define ADXL345_INACT_RELATIVE		1<<3
+#define ADXL345_INACT_ABSOLUTE		0		// Default
+#define ADXL345_INACT_ENABLE_X		1<<2
+#define ADXL345_INACT_ENABLE_Y		1<<1
+#define ADXL345_INACT_ENABLE_Z		1
+#define ADXL345_INACT_ENABLE_ALL	(ADXL345_INACT_ENABLE_X | ADXL345_INACT_ENABLE_Y | ADXL345_INACT_ENABLE_Z)
+
+// Flags for adxl345_tap_settings()
+#define ADXL345_TAP_SUPRESS			1<<3
+#define ADXL345_TAP_ENABLE_X		1<<2
+#define ADXL345_TAP_ENABLE_Y		1<<1
+#define ADXL345_TAP_ENABLE_Z		1
+
+// Flags for adxl345_set_bandwidth()
+#define ADXL345_BW_1600				15
+#define ADXL345_BW_800				14
+#define ADXL345_BW_400				13
+#define ADXL345_BW_200				12
+#define ADXL345_BW_100				11
+#define ADXL345_BW_50				10
+#define ADXL345_BW_25				9
+#define ADXL345_BW_12_5				1<<3
+#define ADXL345_BW_6_25				7
+#define ADXL345_BW_3_13				6
+#define ADXL345_BW_1_56				5
+#define ADXL345_BW_0_78				1<<2
+#define ADXL345_BW_0_39				3
+#define ADXL345_BW_0_20				1<<1
+#define ADXL345_BW_0_10				1
+#define ADXL345_BW_0_05				0		// Default
+
+// Flags for adxl345_power_settings()
+#define ADXL345_POWER_LINK			1<<5
+#define ADXL345_POWER_AUTO_SLEEP	1<<4
+#define ADXL345_POWER_MEASURE		1<<3
+#define ADXL345_POWER_SLEEP			1<<2
+#define ADXL345_POWER_S_1HZ			3
+#define ADXL345_POWER_S_2HZ			1<<1
+#define ADXL345_POWER_S_4HZ			1
+#define ADXL345_POWER_S_8HZ			0		// Default
+
+// Flags for adxl345_enable_interrupts() and adxl345_map_interrupts()
+#define ADXL345_INT_DATA_READY		1<<7
+#define ADXL345_INT_SINGLE_TAP		1<<6
+#define ADXL345_INT_DOUBLE_TAP		1<<5
+#define ADXL345_INT_ACTIVITY		1<<4
+#define ADXL345_INT_INACTIVITY		1<<3
+#define ADXL345_INT_FREE_FALL		1<<2
+#define	ADXL345_INT_WATERMARK		1<<1
+#define ADXL345_INT_OVERRUN			1
+
+// Flags for adxl345_data_settings()
+#define ADXL345_DATA_SELF_TEST		1<<7
+#define ADXL345_DATA_SPI_3W			1<<6
+#define ADXL345_DATA_INT_INVERT		1<<5
+#define ADXL345_DATA_FULL_RES		1<<3
+#define ADXL345_DATA_MSB			1<<2
+#define ADXL345_DATA_RANGE_16G		3
+#define ADXL345_DATA_RANGE_8G		1<<1
+#define ADXL345_DATA_RANGE_4G		1
+#define ADXL345_DATA_RANGE_2G		0		// Default
+
+// Flags for adxl345_fifo_settings()
+#define ADXL345_FIFO_MODE_TRIGGER	192
+#define ADXL345_FIFO_MODE_STREAM	1<<7
+#define ADXL345_FIFO_MODE_FIFO		1<<6
+#define ADXL345_FIFO_MODE_BYPASS	0		// Default
+#define ADXL345_FIFO_TRIGGER_INT1	0		// Default
+#define ADXL345_FIFO_TRIGGER_INT2	1<<5
+
+// Indices for adxl345_axis_get_data_raw() and adxl345_axis_get_data_raw_timeout()
+#define ADXL345_INDEX_X 0
+#define ADXL345_INDEX_Y 1
+#define ADXL345_INDEX_Z 2
+
+/*
+ * Represents a single adxl345 sensor on the I²C bus
+ */
+typedef struct
+{
+	i2c_inst_t *i2c_port;
+	uint8_t i2c_addr;
+} adxl345_sensor;
+
+/*
+ * Represents a single set of values read from a sensor
+ * (x-, y- and z-axis in this order)
+ */
+typedef union
+{
+	uint16_t axis[3];
+	uint8_t raw[6];
+} adxl345_axis_data;
+
+/*
+ * Initializes the given adxl345 sensor
+ *
+ * sensor	-	adxl345 instance to be initialized
+ * i2c_port	-	I²C instance specifier, either i2c0 or i2c1
+ * i2c_addr	-	I²C address of the sensor
+ */
+bool adxl345_init (adxl345_sensor *sensor, i2c_inst_t *i2c_port, uint8_t i2c_addr);
+
+/*
+ * Reads only the acceleration of the given adxl345 sensor
+ *
+ * sensor	-	adxl345 instance to be read from
+ * data		-	Buffer the data will be saved in
+ */
+int adxl345_axis_get_data (adxl345_sensor *sensor, adxl345_axis_data *data);
+
+/*
+ * Reads only the acceleration of the given adxl345 sensor
+ *
+ * sensor		-	adxl345 instance to be read from
+ * data			-	Buffer the data will be saved in
+ * timeout_s	-	Amount of time (in seconds) the function tries to read
+ */
+int adxl345_axis_get_data_timeout (adxl345_sensor *sensor, adxl345_axis_data *data, unsigned int timeout_s);
+
+/*
+ * Reads only the acceleration of the given adxl345 sensor
+ *
+ * sensor	-	adxl345 instance to be read from
+ * data		-	Buffer the data will be saved in
+ */
+int adxl345_axis_get_data_raw (adxl345_sensor *sensor, uint8_t axis, uint8_t *data);
+
+/*
+ * Reads only the acceleration of the given adxl345 sensor
+ *
+ * sensor		-	adxl345 instance to be read from
+ * data			-	Buffer the data will be saved in
+ * timeout_s	-	Amount of time (in seconds) the function tries to read
+ */
+int adxl345_axis_get_data_raw_timeout (adxl345_sensor *sensor, uint8_t axis, uint8_t *data, unsigned int timeout_s);
+
+/*
+ * Gets the acceleration for the x-axis out of the given data
+ *
+ * data	-	Buffer of data to be evaluated
+ */
+short adxl345_get_x (adxl345_axis_data *data);
+
+/*
+ * Gets the acceleration for the y-axis out of the given data
+ *
+ * data	-	Buffer of data to be evaluated
+ */
+short adxl345_get_y (adxl345_axis_data *data);
+
+/*
+ * Gets the acceleration for the z-axis out of the given data
+ *
+ * data	-	Buffer of data to be evaluated
+ */
+short adxl345_get_z (adxl345_axis_data *data);
+
+/*! \brief 
+ * Gets the roll out of the given data
+ *
+ * data	-	Buffer of data to be evaluated
+ */
+float adxl345_get_roll (adxl345_axis_data *data);
+
+/*
+ * Gets the pitch out of the given data
+ *
+ * data	-	Buffer of data to be evaluated
+ */
+float adxl345_get_pitch (adxl345_axis_data *data);
+
+// I think it's easier to use x and y instead of roll and pitch
+#define adxl345_get_rot_x(data) adxl345_get_roll(data)
+#define adxl345_get_rot_y(data) adxl345_get_pitch(data)
+
+/*
+ * Sets the threshold for the tap interrupt of the given adxl345 sensor
+ *
+ * sensor		-	adxl345 instance to be written to
+ * threshold	-	Threshold
+ */
+bool adxl345_tap_set_threshold (adxl345_sensor *sensor, uint8_t threshold);
+
+/*
+ * Sets the offset on all three axis of the given adxl345 sensor
+ *
+ * sensor	-	adxl345 instance to be written to
+ * x		-	Offset on the x-axis
+ * y		-	Offset on the y-axis
+ * z		-	Offset on the z-axis
+ */
+bool adxl345_set_offset (adxl345_sensor *sensor, uint8_t x, uint8_t y, uint8_t z);
+
+/*
+ * Sets the offset on the x-axis of the given adxl345 sensor
+ *
+ * sensor	-	adxl345 instance to be written to
+ * x		-	Offset on the x-axis
+ */
+#define adxl345_set_offset_x(sensor,x)	adxl345_set_offset(sensor,x,0,0)
+
+/*
+ * Sets the offset on the y-axis of the given adxl345 sensor
+ *
+ * sensor	-	adxl345 instance to be written to
+ * y		-	Offset on the y-axis
+ */
+#define adxl345_set_offset_y(sensor,y)	adxl345_set_offset(sensor,0,y,0)
+
+/*
+ * Sets the offset on the z-axis of the given adxl345 sensor
+ *
+ * sensor	-	adxl345 instance to be written to
+ * z		-	Offset on the z-axis
+ */
+#define adxl345_set_offset_z(sensor,z)	adxl345_set_offset(sensor,0,0,z)
+
+/*
+ * Sets the maximum duration an event must be above the threshold (adxl345_tap_set_threshold)
+ * to qualify as a tap event
+ *
+ * sensor	-	adxl345 instance to be written to
+ * duration	-	Maximum duration of a potential tap event (625 us / LSB)
+ */
+bool adxl345_tap_set_duration (adxl345_sensor *sensor, uint8_t duration);
+
+/*
+ * Sets the waiting time from the detection of a tap event to the start of the time window
+ * during which a possible second tap can be detected
+ *
+ * sensor	-	adxl345 instance to be written to
+ * latent	-	Waiting time to the start of time window for detection of second tap (1.25 ms / LSB)
+ */
+bool adxl345_tap_set_latent (adxl345_sensor *sensor, uint8_t latent);
+
+/*
+ * Sets the amount of time after the latency during which a second tap can be detected
+ *
+ * sensor	-	adxl345 instance to be written to
+ * window	-	Amount of time during which a second tap can be detected (1.25 ms / LSB)
+ * 				Set to zero to deactivate second tap detection
+ */
+bool adxl345_tap_set_window (adxl345_sensor *sensor, uint8_t window);
+
+/*
+ * Sets the threshold for the activity interrupt of the given adxl345 sensor
+ *
+ * sensor		-	adxl345 instance to be written to
+ * threshold	-	Threshold
+ */
+bool adxl345_activity_set_threshold (adxl345_sensor *sensor, uint8_t threshold);
+
+/*
+ * Sets the threshold for the inactivity interrupt of the given adxl345 sensor
+ *
+ * sensor		-	adxl345 instance to be written to
+ * threshold	-	Threshold
+ */
+bool adxl345_inactivity_set_threshold (adxl345_sensor *sensor, uint8_t threshold);
+
+/*
+ * Sets the amount of time that acceleration must be below the threshold (adxl345_inactivity_set_threshold)
+ *
+ * sensor		-	adxl345 instance to be written to
+ * threshold	-	Amount of time acceleration must be below the threshold (1 s / LSB)
+ */
+bool adxl345_inactivity_set_time (adxl345_sensor *sensor, uint8_t time);
+
+/*
+ * Sets the settings of the activity / inactivity interrupts
+ *
+ * sensor	-	adxl345 instance to be written to
+ * flags	-	Options
+ */
+bool adxl345_act_inact_settings (adxl345_sensor *sensor, uint8_t flags);
+bool adxl345_freefall_set_threshold (adxl345_sensor *sensor, uint8_t threshold);
+bool adxl345_freefall_set_time (adxl345_sensor *sensor, uint8_t time);
+bool adxl345_tap_settings (adxl345_sensor *sensor, uint8_t flags);
+// Function for ACT_TAP_STATUS
+bool adxl345_set_bandwidth (adxl345_sensor *sensor, bool low_power, uint8_t bandwidth);
+bool adxl345_power_settings (adxl345_sensor *sensor, uint8_t flags);
+bool adxl345_enable_interrupts (adxl345_sensor *sensor, uint8_t flags);
+bool adxl345_map_interrupts (adxl345_sensor *sensor, uint8_t flags);
+bool adxl345_reset_interrupts (adxl345_sensor *sensor);
+bool adxl345_data_settings (adxl345_sensor *sensor, uint8_t flags);
+bool adxl345_fifo_settings (adxl345_sensor *sensor, uint8_t flags, uint8_t samples);
+
+/* ------------------------------------------------------------------------------------- */
+
+// It's easier to use the functions above, but feel free
 
 #define ADXL345_REG_DEVID			0x00 // Read
 // 0x01 - 0x1c are reserved
@@ -46,275 +363,57 @@
 #define ADXL345_REG_FIFO_CTL		0x38 // Read / Write
 #define ADXL345_REG_FIFO_STATUS		0x39 // Read
 
+#define ADXL345_REG_DATA_BEGIN_AXIS	0x32
+
+#define ADXL345_REG_DATA_BEGIN_X	ADXL345_REG_DATAX0
+#define ADXL345_REG_DATA_BEGIN_Y	ADXL345_REG_DATAY0
+#define ADXL345_REG_DATA_BEGIN_Z	ADXL345_REG_DATAZ0
+
+#define ADXL345_REG_DATA_SIZE_AXIS_SINGLE	2
+
+#define ADXL345_REG_DATA_SIZE_AXIS_ALL		6
+
 /*
-	The measured values starting here
-
-	- 0x32 - DATAX0
-		Lower byte of x value
-	- 0x33 - DATAX1
-		Upper byte of x value
-	- 0x34 - DATAY0
-		Lower byte of y value
-	- 0x35 - DATAY1
-		Upper byte of y value
-	- 0x36 - DATAZ0
-		Lower byte of z value
-	- 0x37 - DATAZ1
-		Upper byte of z value
-*/
-#define ADXL345_REG_VAL				0x32
-
-// Flags for adxl345_act_inact_settings()
-#define ADXL345_ACT_RELATIVE		1<<7
-#define ADXL345_ACT_ABSOLUTE		0
-#define ADXL345_ACT_ENABLE_X		1<<6
-#define ADXL345_ACT_ENABLE_Y		1<<5
-#define ADXL345_ACT_ENABLE_Z		1<<4
-#define ADXL345_ACT_ENABLE_ALL		(ADXL345_ACT_ENABLE_X | ADXL345_ACT_ENABLE_Y | ADXL345_ACT_ENABLE_Z)
-#define ADXL345_INACT_RELATIVE		1<<3
-#define ADXL345_INACT_ABSOLUTE		0
-#define ADXL345_INACT_ENABLE_X		1<<2
-#define ADXL345_INACT_ENABLE_Y		1<<1
-#define ADXL345_INACT_ENABLE_Z		1
-#define ADXL345_INACT_ENABLE_ALL	(ADXL345_INACT_ENABLE_X | ADXL345_INACT_ENABLE_Y | ADXL345_INACT_ENABLE_Z)
-
-#define ADXL345_TAP_SUPRESS			1<<3
-#define ADXL345_TAP_ENABLE_X		1<<2
-#define ADXL345_TAP_ENABLE_Y		1<<1
-#define ADXL345_TAP_ENABLE_Z		1
-
-#define ADXL345_BW_1600				15
-#define ADXL345_BW_800				14
-#define ADXL345_BW_400				13
-#define ADXL345_BW_200				12
-#define ADXL345_BW_100				11
-#define ADXL345_BW_50				10
-#define ADXL345_BW_25				9
-#define ADXL345_BW_12_5				1<<3
-#define ADXL345_BW_6_25				7
-#define ADXL345_BW_3_13				6
-#define ADXL345_BW_1_56				5
-#define ADXL345_BW_0_78				1<<2
-#define ADXL345_BW_0_39				3
-#define ADXL345_BW_0_20				1<<1
-#define ADXL345_BW_0_10				1
-#define ADXL345_BW_0_05				0
-
-#define ADXL345_POWER_LINK			1<<5
-#define ADXL345_POWER_AUTO_SLEEP	1<<4
-#define ADXL345_POWER_MEASURE		1<<3
-#define ADXL345_POWER_SLEEP			1<<2
-#define ADXL345_POWER_S_1HZ			3
-#define ADXL345_POWER_S_2HZ			1<<1
-#define ADXL345_POWER_S_4HZ			1
-#define ADXL345_POWER_S_8HZ			0
-
-#define ADXL345_INT_DATA_READY		1<<7
-#define ADXL345_INT_SINGLE_TAP		1<<6
-#define ADXL345_INT_DOUBLE_TAP		1<<5
-#define ADXL345_INT_ACTIVITY		1<<4
-#define ADXL345_INT_INACTIVITY		1<<3
-#define ADXL345_INT_FREE_FALL		1<<2
-#define	ADXL345_INT_WATERMARK		1<<1
-#define ADXL345_INT_OVERRUN			1
-
-#define ADXL345_DATA_SELF_TEST		1<<7
-#define ADXL345_DATA_SPI_3W			1<<6
-#define ADXL345_DATA_INT_INVERT		1<<5
-#define ADXL345_DATA_FULL_RES		1<<3
-#define ADXL345_DATA_MSB			1<<2
-#define ADXL345_DATA_RANGE_16G		3
-#define ADXL345_DATA_RANGE_8G		1<<1
-#define ADXL345_DATA_RANGE_4G		1
-#define ADXL345_DATA_RANGE_2G		0
-
-#define ADXL345_FIFO_MODE_TRIGGER	192
-#define ADXL345_FIFO_MODE_STREAM	1<<7
-#define ADXL345_FIFO_MODE_FIFO		1<<6
-#define ADXL345_FIFO_MODE_BYPASS	0
-#define ADXL345_FIFO_TRIGGER_INT1	0
-#define ADXL345_FIFO_TRIGGER_INT2	1<<5
-
-/*! \brief Represents a single adxl345 sensor on the I²C bus
- *  \ingroup accel
-*/
-typedef struct
-{
-	i2c_inst_t *i2c_port;
-	uint8_t i2c_addr;
-} adxl345_sensor;
-
-/*! \brief Represents a single set of values read from a sensor
- *  \ingroup accel
-*/
-typedef union
-{
-	uint8_t data_8[8];
-	uint16_t data_16[4];
-} adxl345_data;
-
-/*! \brief Initializes the given adxl345 sensor
- *  \ingroup accel
+ * Send a single byte to the given adxl345 sensor
  *
- * Initialize \p sensor at \p i2c_addr on \p i2c_port
- *
- * \param sensor adxl345 instance to be initialized
- * \param i2c_port I²C instance specifier, either \ref i2c0 or \ref i2c1
- * \param i2c_addr I²C address of the sensor
- * \return true if succeeded, false if failed
-*/
-bool adxl345_init (adxl345_sensor *sensor, i2c_inst_t *i2c_port, uint8_t i2c_addr);
-
-/*! \brief Send a single byte to the given adxl345 sensor
- *  \ingroup accel
- *
- * Writes a \p command into \p reg_addr of \p sensor
- *
- * \param sensor adxl345 instance to be written to
- * \param reg_addr Adress of the register to write in (not the adress of the device)
- * \param command Single byte to write
- * \param no_stop Sending stop signal (false = sending, true = not sending)
- * \return Bytes written
-*/
+ * sensor	-	adxl345 instance to be written to
+ * reg_addr	-	Address of the register to write in (not the address of the device)
+ * command	-	Single byte to write
+ * no_stop	-	Sending stop signal (false = sending, true = not sending)
+ */
 int adxl345_write (adxl345_sensor *sensor, uint8_t reg_addr, uint8_t command, bool no_stop);
 
-/*! \brief Send a single byte to the given adxl345 sensor with atimeout (in seconds)
- *  \ingroup accel
+/*
+ * Send a single byte to the given adxl345 sensor with a timeout (in seconds)
  *
- * Writes a \p command into \p reg_addr of \p sensor with a \p timeout_s (in seconds)
- *
- * \param sensor adxl345 instance to be written to
- * \param reg_addr Adress of the register to write in (not the adress of the device)
- * \param command Single byte to write
- * \param no_stop Sending stop signal (false = sending, true = not sending)
- * \param timeout_s Amount of time (in seconds) the function tries to write
- * \return Bytes written
-*/
+ * sensor		-	adxl345 instance to be written to
+ * reg_addr		-	Address of the register to write in (not the address of the device)
+ * command		-	Single byte to write
+ * no_stop		-	Sending stop signal (false = sending, true = not sending)
+ * timeout_s	-	Amount of time (in seconds) the function tries to write
+ */
 int adxl345_write_timeout (adxl345_sensor *sensor, uint8_t reg_addr, uint8_t command, bool no_stop, unsigned int timeout_s);
 
-/*! \brief Reads the acceleration and FIFO status of the given adxl345 sensor
- *  \ingroup accel
+/*
+ * Reads bytes from the given adxl345 sensor
  *
- * Reads \p data out of \p sensor
- *
- * \param sensor adxl345 instance to be read from
- * \param data Buffer the data will be saved in
- * \return Bytes read
-*/
-int adxl345_read_8 (adxl345_sensor *sensor, adxl345_data *data);
+ * sensor	-	adxl345 instance to be read from
+ * reg_addr	-	Address of the register to read from (not the address of the device)
+ * buffer	-	Buffer the bytes will be written into
+ * length	-	Amount of bytes to read
+ * no_stop	-	Sending stop signal (false = sending, true = not sending)
+ */
+int adxl345_read (adxl345_sensor *sensor, uint8_t reg_addr, uint8_t *buffer, size_t length, bool no_stop);
 
-/*! \brief Reads the acceleration and FIFO status of the given adxl345 sensor with a timeout (in seconds)
- *  \ingroup accel
+/*
+ * Reads bytes from the given adxl345 sensor with a timeout (in seconds)
  *
- * Reads \p data out of \p sensor with a \p timeout_s (in seconds)
- *
- * \param sensor adxl345 instance to be read from
- * \param data Buffer the data will be saved in
- * \param timeout_s Amount of time (in seconds) the function tries to read
- * \return Bytes read
-*/
-int adxl345_read_8_timeout (adxl345_sensor *sensor, adxl345_data *data, unsigned int timeout_s);
-
-/*! \brief Reads only the acceleration of the given adxl345 sensor
- *  \ingroup accel
- *
- * Reads \p data out of \p sensor
- *
- * \param sensor adxl345 instance to be read from
- * \param data Buffer the data will be saved in
- * \return Bytes read
-*/
-int adxl345_read_6 (adxl345_sensor *sensor, adxl345_data *data);
-
-/*! \brief Reads only the acceleration of the given adxl345 sensor
- *  \ingroup accel
- *
- * Reads \p data out of \p sensor with a \p timeout_s (in seconds)
- *
- * \param sensor adxl345 instance to be read from
- * \param data Buffer the data will be saved in
- * \param timeout_s Amount of time (in seconds) the function tries to read
- * \return Bytes read
-*/
-int adxl345_read_6_timeout (adxl345_sensor *sensor, adxl345_data *data, unsigned int timeout_s);
-
-/*! \brief Gets the acceleration for the x-axis out of the given data
- *  \ingroup accel
- *
- * Gets the acceleration for the x-axis out ouf \p data
- *
- * \param data Buffer of data to be evaluated
- * \return Value for the x-axis
-*/
-int adxl345_get_x (adxl345_data *data);
-
-/*! \brief Gets the acceleration for the y-axis out of the given data
- *  \ingroup accel
- *
- * Gets the acceleration for the y-axis out ouf \p data
- *
- * \param data Buffer of data to be evaluated
- * \return Value for the y-axis
-*/
-int adxl345_get_y (adxl345_data *data);
-
-/*! \brief Gets the acceleration for the z-axis out of the given data
- *  \ingroup accel
- *
- * Gets the acceleration for the z-axis out ouf \p data
- *
- * \param data Buffer of data to be evaluated
- * \return Value for the z-axis
-*/
-int adxl345_get_z (adxl345_data *data);
-
-/*! \brief Gets the roll out of the given data
- *  \ingroup accel
- *
- * Gets the roll out ouf \p data
- *
- * \param data Buffer of data to be evaluated
- * \return Roll
-*/
-float adxl345_get_roll (adxl345_data *data);
-
-/*! \brief Gets the pitch out of the given data
- *  \ingroup accel
- *
- * Gets the pitch out ouf \p data
- *
- * \param data Buffer of data to be evaluated
- * \return Pitch
-*/
-float adxl345_get_pitch (adxl345_data *data);
-
-// I think it's easier to use x and y instead of roll and pitch
-#define adxl345_get_rot_x(data) adxl345_get_roll(data)
-#define adxl345_get_rot_y(data) adxl345_get_pitch(data)
-
-// New stuff
-bool adxl345_tap_set_threshold (adxl345_sensor *sensor, uint8_t threshold);
-bool adxl345_set_offset (adxl345_sensor *sensor, uint8_t x, uint8_t y, uint8_t z);
-#define adxl345_set_offset_x(s,x)	adxl345_set_offset(s,x,0,0)
-#define adxl345_set_offset_y(s,y)	adxl345_set_offset(s,0,y,0)
-#define adxl345_set_offset_z(s,z)	adxl345_set_offset(s,0,0,z)
-bool adxl345_tap_set_duration (adxl345_sensor *sensor, uint8_t duration);
-bool adxl345_tap_set_latent (adxl345_sensor *sensor, uint8_t latent);
-bool adxl345_tap_set_window (adxl345_sensor *sensor, uint8_t window);
-bool adxl345_activity_set_threshold (adxl345_sensor *sensor, uint8_t threshold);
-bool adxl345_inactivity_set_threshold (adxl345_sensor *sensor, uint8_t threshold);
-bool adxl345_inactivity_set_time (adxl345_sensor *sensor, uint8_t time);
-bool adxl345_act_inact_settings (adxl345_sensor *sensor, uint8_t flags);
-bool adxl345_freefall_set_threshold (adxl345_sensor *sensor, uint8_t threshold);
-bool adxl345_freefall_set_time (adxl345_sensor *sensor, uint8_t time);
-bool adxl345_tap_settings (adxl345_sensor *sensor, uint8_t flags);
-// Function for ACT_TAP_STATUS
-bool adxl345_set_bandwidth (adxl345_sensor *sensor, bool low_power, uint8_t bandwidth);
-bool adxl345_power_settings (adxl345_sensor *sensor, uint8_t flags);
-bool adxl345_enable_interrupts (adxl345_sensor *sensor, uint8_t flags);
-bool adxl345_map_interrupts (adxl345_sensor *sensor, uint8_t flags);
-bool adxl345_reset_interrupts (adxl345_sensor *sensor);
-bool adxl345_data_settings (adxl345_sensor *sensor, uint8_t flags);
-bool adxl345_fifo_settings (adxl345_sensor *sensor, uint8_t flags, uint8_t samples);
+ * sensor		-	adxl345 instance to be read from
+ * reg_addr		-	Address of the register to read from (not the address of the device)
+ * buffer		-	Buffer the bytes will be written into
+ * no_stop		-	Sending stop signal (false = sending, true = not sending)
+ * timeout_s	-	Amount of time (in seconds) the function tries to read
+ */
+int adxl345_read_timeout (adxl345_sensor *sensor, uint8_t reg_addr, uint8_t *buffer, size_t length, bool no_stop, unsigned int timeout_s);
 
 #endif
