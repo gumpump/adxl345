@@ -61,7 +61,7 @@ int adxl345_axis_get_data_raw_timeout (adxl345_sensor *sensor, uint8_t axis, uin
 	uint8_t command = ADXL345_REG_DATA_BEGIN_AXIS + (axis * 2);
 	unsigned int actual_timeout = (timeout_s * 1000 * 1000) / 2;
 	i2c_write_timeout_us (sensor->i2c_port, sensor->i2c_addr, &command, sizeof (command), false, actual_timeout);
-	return i2c_read_timeout_us (sensor->i2c_port, sensor->i2c_addr, data->raw, ADXL345_REG_DATA_SIZE_AXIS_SINGLE, false, actual_timeout);
+	return i2c_read_timeout_us (sensor->i2c_port, sensor->i2c_addr, data, ADXL345_REG_DATA_SIZE_AXIS_SINGLE, false, actual_timeout);
 }
 
 short adxl345_get_x (adxl345_axis_data *data)
