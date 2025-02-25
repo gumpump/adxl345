@@ -66,17 +66,17 @@ int adxl345_axis_get_data_raw_timeout (adxl345_sensor *sensor, uint8_t axis, uin
 
 short adxl345_get_x (adxl345_axis_data *data)
 {
-	return (short)data->axis[ADXL345_X];
+	return (short)data->axis[ADXL345_INDEX_X];
 }
 
 short adxl345_get_y (adxl345_axis_data *data)
 {
-	return (short)data->axis[ADXL345_Y];
+	return (short)data->axis[ADXL345_INDEX_Y];
 }
 
 short adxl345_get_z (adxl345_axis_data *data)
 {
-	return (short)data->axis[ADXL345_Z];
+	return (short)data->axis[ADXL345_INDEX_Z];
 }
 
 float adxl345_get_roll (adxl345_axis_data *data)
