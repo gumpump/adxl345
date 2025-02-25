@@ -25,32 +25,34 @@
  *
  * 		If you want to set 1 g (gravitational force, not weight),
  * 		you have to divide 1 g by 0.0156 g (15.6 mg).
- *			1 / 0.0156 = 64,102564...
- *		Now you round the result of this division and you got the amount
- *		of LSBs you have to give the function.		
+ *			1 / 0.0156 = 64.102564...
+ *		Now you round the result of this division (64.102564... -> 64) and you got the amount
+ *		of LSBs you have to give the function.
  */
 
 /* ------------------------------------------------------------------------------------- */
 
 // Flags for adxl345_act_inact_settings()
 #define ADXL345_ACT_RELATIVE		1<<7
-#define ADXL345_ACT_ABSOLUTE		0		// Default
+#define ADXL345_ACT_ABSOLUTE		0
 #define ADXL345_ACT_ENABLE_X		1<<6
 #define ADXL345_ACT_ENABLE_Y		1<<5
 #define ADXL345_ACT_ENABLE_Z		1<<4
 #define ADXL345_ACT_ENABLE_ALL		(ADXL345_ACT_ENABLE_X | ADXL345_ACT_ENABLE_Y | ADXL345_ACT_ENABLE_Z)
 #define ADXL345_INACT_RELATIVE		1<<3
-#define ADXL345_INACT_ABSOLUTE		0		// Default
+#define ADXL345_INACT_ABSOLUTE		0
 #define ADXL345_INACT_ENABLE_X		1<<2
 #define ADXL345_INACT_ENABLE_Y		1<<1
 #define ADXL345_INACT_ENABLE_Z		1
 #define ADXL345_INACT_ENABLE_ALL	(ADXL345_INACT_ENABLE_X | ADXL345_INACT_ENABLE_Y | ADXL345_INACT_ENABLE_Z)
+#define ADXL345_ACT_INACT_DEFAULT	0
 
 // Flags for adxl345_tap_settings()
 #define ADXL345_TAP_SUPRESS			1<<3
 #define ADXL345_TAP_ENABLE_X		1<<2
 #define ADXL345_TAP_ENABLE_Y		1<<1
 #define ADXL345_TAP_ENABLE_Z		1
+#define ADXL345_TAP_DEFAULT			0
 
 // Flags for adxl345_set_bandwidth()
 #define ADXL345_BW_1600				15
@@ -68,7 +70,8 @@
 #define ADXL345_BW_0_39				3
 #define ADXL345_BW_0_20				1<<1
 #define ADXL345_BW_0_10				1
-#define ADXL345_BW_0_05				0		// Default
+#define ADXL345_BW_0_05				0
+#define ADXL345_BW_DEFAULT			ADXL345_BW_50
 
 // Flags for adxl345_power_settings()
 #define ADXL345_POWER_LINK			1<<5
@@ -78,7 +81,8 @@
 #define ADXL345_POWER_S_1HZ			3
 #define ADXL345_POWER_S_2HZ			1<<1
 #define ADXL345_POWER_S_4HZ			1
-#define ADXL345_POWER_S_8HZ			0		// Default
+#define ADXL345_POWER_S_8HZ			0
+#define ADXL345_POWER_DEFAULT		0
 
 // Flags for adxl345_enable_interrupts() and adxl345_map_interrupts()
 #define ADXL345_INT_DATA_READY		1<<7
@@ -89,6 +93,7 @@
 #define ADXL345_INT_FREE_FALL		1<<2
 #define	ADXL345_INT_WATERMARK		1<<1
 #define ADXL345_INT_OVERRUN			1
+#define ADXL345_INT_DEFAULT			0
 
 // Flags for adxl345_data_settings()
 #define ADXL345_DATA_SELF_TEST		1<<7
@@ -99,15 +104,17 @@
 #define ADXL345_DATA_RANGE_16G		3
 #define ADXL345_DATA_RANGE_8G		1<<1
 #define ADXL345_DATA_RANGE_4G		1
-#define ADXL345_DATA_RANGE_2G		0		// Default
+#define ADXL345_DATA_RANGE_2G		0
+#define ADXL345_DATA_DEFAULT		0
 
 // Flags for adxl345_fifo_settings()
 #define ADXL345_FIFO_MODE_TRIGGER	192
 #define ADXL345_FIFO_MODE_STREAM	1<<7
 #define ADXL345_FIFO_MODE_FIFO		1<<6
-#define ADXL345_FIFO_MODE_BYPASS	0		// Default
-#define ADXL345_FIFO_TRIGGER_INT1	0		// Default
+#define ADXL345_FIFO_MODE_BYPASS	0
+#define ADXL345_FIFO_TRIGGER_INT1	0
 #define ADXL345_FIFO_TRIGGER_INT2	1<<5
+#define ADXL345_FIFO_DEFAULT		0
 
 // Indices for adxl345_axis_get_data_raw() and adxl345_axis_get_data_raw_timeout()
 #define ADXL345_INDEX_X 0
@@ -227,9 +234,9 @@ bool adxl345_tap_set_threshold (adxl345_sensor *sensor, uint8_t threshold);
  * Sets the offset on all three axis of the given adxl345 sensor
  *
  * sensor	-	adxl345 instance to be written to
- * x		-	Offset on the x-axis
- * y		-	Offset on the y-axis
- * z		-	Offset on the z-axis
+ * x		-	Offset on the x-axis (15.6 mg / LSB)
+ * y		-	Offset on the y-axis (15.6 mg / LSB)
+ * z		-	Offset on the z-axis (15.6 mg / LSB)
  */
 bool adxl345_set_offset (adxl345_sensor *sensor, uint8_t x, uint8_t y, uint8_t z);
 
@@ -237,7 +244,7 @@ bool adxl345_set_offset (adxl345_sensor *sensor, uint8_t x, uint8_t y, uint8_t z
  * Sets the offset on the x-axis of the given adxl345 sensor
  *
  * sensor	-	adxl345 instance to be written to
- * x		-	Offset on the x-axis
+ * x		-	Offset on the x-axis (15.6 mg / LSB)
  */
 #define adxl345_set_offset_x(sensor,x)	adxl345_set_offset(sensor,x,0,0)
 
@@ -245,7 +252,7 @@ bool adxl345_set_offset (adxl345_sensor *sensor, uint8_t x, uint8_t y, uint8_t z
  * Sets the offset on the y-axis of the given adxl345 sensor
  *
  * sensor	-	adxl345 instance to be written to
- * y		-	Offset on the y-axis
+ * y		-	Offset on the y-axis (15.6 mg / LSB)
  */
 #define adxl345_set_offset_y(sensor,y)	adxl345_set_offset(sensor,0,y,0)
 
@@ -253,7 +260,7 @@ bool adxl345_set_offset (adxl345_sensor *sensor, uint8_t x, uint8_t y, uint8_t z
  * Sets the offset on the z-axis of the given adxl345 sensor
  *
  * sensor	-	adxl345 instance to be written to
- * z		-	Offset on the z-axis
+ * z		-	Offset on the z-axis (15.6 mg / LSB)
  */
 #define adxl345_set_offset_z(sensor,z)	adxl345_set_offset(sensor,0,0,z)
 
@@ -288,7 +295,7 @@ bool adxl345_tap_set_window (adxl345_sensor *sensor, uint8_t window);
  * Sets the threshold for the activity interrupt of the given adxl345 sensor
  *
  * sensor		-	adxl345 instance to be written to
- * threshold	-	Threshold
+ * threshold	-	Threshold (62.5 mg / LSB)
  */
 bool adxl345_activity_set_threshold (adxl345_sensor *sensor, uint8_t threshold);
 
@@ -296,7 +303,7 @@ bool adxl345_activity_set_threshold (adxl345_sensor *sensor, uint8_t threshold);
  * Sets the threshold for the inactivity interrupt of the given adxl345 sensor
  *
  * sensor		-	adxl345 instance to be written to
- * threshold	-	Threshold
+ * threshold	-	Threshold (62.5 mg / LSB)
  */
 bool adxl345_inactivity_set_threshold (adxl345_sensor *sensor, uint8_t threshold);
 
@@ -318,7 +325,6 @@ bool adxl345_act_inact_settings (adxl345_sensor *sensor, uint8_t flags);
 bool adxl345_freefall_set_threshold (adxl345_sensor *sensor, uint8_t threshold);
 bool adxl345_freefall_set_time (adxl345_sensor *sensor, uint8_t time);
 bool adxl345_tap_settings (adxl345_sensor *sensor, uint8_t flags);
-// Function for ACT_TAP_STATUS
 bool adxl345_set_bandwidth (adxl345_sensor *sensor, bool low_power, uint8_t bandwidth);
 bool adxl345_power_settings (adxl345_sensor *sensor, uint8_t flags);
 bool adxl345_enable_interrupts (adxl345_sensor *sensor, uint8_t flags);
@@ -326,6 +332,24 @@ bool adxl345_map_interrupts (adxl345_sensor *sensor, uint8_t flags);
 bool adxl345_reset_interrupts (adxl345_sensor *sensor);
 bool adxl345_data_settings (adxl345_sensor *sensor, uint8_t flags);
 bool adxl345_fifo_settings (adxl345_sensor *sensor, uint8_t flags, uint8_t samples);
+
+uint8_t adxl345_get_device_id (adxl345_sensor *sensor);
+uint8_t adxl345_tap_get_threshold (adxl345_sensor *sensor);
+uint8_t adxl345_get_offset_x (adxl345_sensor *sensor);
+uint8_t adxl345_get_offset_y (adxl345_sensor *sensor);
+uint8_t adxl345_get_offset_z (adxl345_sensor *sensor);
+uint8_t adxl345_tap_get_duration (adxl345_sensor *sensor);
+uint8_t adxl345_tap_get_latent (adxl345_sensor *sensor);
+uint8_t adxl345_tap_get_window (adxl345_sensor *sensor);
+uint8_t adxl345_activity_get_threshold (adxl345_sensor *sensor);
+uint8_t adxl345_inactivity_get_threshold (adxl345_sensor *sensor);
+uint8_t adxl345_activity_get_time (adxl345_sensor *sensor);
+// Function for getting ACT_INACT_CTL
+uint8_t adxl345_freefall_get_threshold (adxl345_sensor *sensor);
+uint8_t adxl345_freefall_get_time (adxl345_sensor *sensor);
+// Function for getting TAP_AXES
+// Function for getting ACT_TAP_STATUS
+// Function for getting BW_RATE
 
 /* ------------------------------------------------------------------------------------- */
 
