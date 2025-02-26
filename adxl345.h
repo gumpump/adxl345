@@ -54,6 +54,14 @@
 #define ADXL345_TAP_ENABLE_Z		1
 #define ADXL345_TAP_DEFAULT			0
 
+// Internal flags for adxl345_..._is_..._involved()
+#define _ADXL345_ACT_X_INV			1<<6
+#define _ADXL345_ACT_Y_INV			1<<5
+#define _ADXL345_ACT_Z_INV			1<<4
+#define _ADXL345_TAP_X_INV			1<<2
+#define _ADXL345_TAP_Y_INV			1<<1
+#define _ADXL345_TAP_Z_INV			0
+
 // Flags for adxl345_set_bandwidth()
 #define ADXL345_BW_1600				15
 #define ADXL345_BW_800				14
@@ -344,12 +352,38 @@ uint8_t adxl345_tap_get_window (adxl345_sensor *sensor);
 uint8_t adxl345_activity_get_threshold (adxl345_sensor *sensor);
 uint8_t adxl345_inactivity_get_threshold (adxl345_sensor *sensor);
 uint8_t adxl345_activity_get_time (adxl345_sensor *sensor);
-// Function for getting ACT_INACT_CTL
+uint8_t adxl345_act_inact_get_settings (adxl345_sensor *sensor);
+#define adxl345_activity_is_threshold_relative(settings)	((settings & ADXL345_ACT_RELATIVE) != 0)
+#define adxl345_activity_is_x_enabled(settings)				((settings & ADXL345_ACT_ENABLE_X) != 0)
+#define adxl345_activity_is_y_enabled(settings)				((settings & ADXL345_ACT_ENABLE_Y) != 0)
+#define adxl345_activity_is_z_enabled(settings)				((settings & ADXL345_ACT_ENABLE_Z) != 0)
+#define adxl345_inactivity_is_threshold_relative(settings)	((settings & ADXL345_INACT_RELATIVE) != 0)
+#define adxl345_inactivity_is_x_enabled(settings)			((settings & ADXL345_INACT_ENABLE_X) != 0)
+#define adxl345_inactivity_is_y_enabled(settings)			((settings & ADXL345_INACT_ENABLE_Y) != 0)
+#define adxl345_inactivity_is_z_enabled(settings)			((settings & ADXL345_INACT_ENABLE_Z) != 0)
 uint8_t adxl345_freefall_get_threshold (adxl345_sensor *sensor);
 uint8_t adxl345_freefall_get_time (adxl345_sensor *sensor);
-// Function for getting TAP_AXES
-// Function for getting ACT_TAP_STATUS
+uint8_t adxl345_tap_get_settings (adxl345_sensor *sensor);
+#define adxl345_tap_is_suppressed(settings)	((settings & ADXL345_TAP_SUPRESS) != 0)
+#define adxl345_tap_is_x_enabled(settings)	((settings & ADXL345_TAP_ENABLE_X) != 0)
+#define adxl345_tap_is_y_enabled(settings)	((settings & ADXL345_TAP_ENABLE_Y) != 0)
+#define adxl345_tap_is_z_enabled(settings)	((settings & ADXL345_TAP_ENABLE_Z) != 0)
+uint8_t adxl345_interrupt_get_involvement (adxl345_sensor *sensor);
+#define adxl345_activity_is_x_involved(involvement) ((involvement & _ADXL345_ACT_X_INV) != 0)
+#define adxl345_activity_is_y_involved(involvement) ((involvement & _ADXL345_ACT_Y_INV) != 0)
+#define adxl345_activity_is_z_involved(involvement)	((involvement & _ADXL345_ACT_Z_INV) != 0)
+#define adxl345_tap_is_x_involved(involvement)		((involvement & _ADXL345_TAP_X_INV) != 0)
+#define adxl345_tap_is_y_involved(involvement)		((involvement & _ADXL345_TAP_Y_INV) != 0)
+#define adxl345_tap_is_z_involved(involvement)		((involvement & _ADXL345_TAP_Z_INV) != 0)
 // Function for getting BW_RATE
+// Function for getting POWER_CTL
+uint8_t adxl345_get_interrupt_status (adxl345_sensor *sensor);
+uint8_t adxl345_get_interrupt_map (adxl345_sensor *sensor);
+uint8_t adxl345_get_interrupt_source (adxl345_sensor *sensor);
+// Function for getting DATA_FORMAT
+// Function for getting FIFO_CTL
+// Function for getting FIFO_STATUS
+
 
 /* ------------------------------------------------------------------------------------- */
 
