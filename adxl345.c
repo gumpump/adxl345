@@ -320,45 +320,218 @@ bool adxl345_fifo_settings (adxl345_sensor *sensor, uint8_t flags, uint8_t sampl
 	return true;
 }
 
-uint8_t adxl345_get_device_id (adxl345_sensor *sensor);
-uint8_t adxl345_tap_get_threshold (adxl345_sensor *sensor);
-uint8_t adxl345_get_offset_x (adxl345_sensor *sensor);
-uint8_t adxl345_get_offset_y (adxl345_sensor *sensor);
-uint8_t adxl345_get_offset_z (adxl345_sensor *sensor);
-uint8_t adxl345_tap_get_duration (adxl345_sensor *sensor);
-uint8_t adxl345_tap_get_latent (adxl345_sensor *sensor);
-uint8_t adxl345_tap_get_window (adxl345_sensor *sensor);
-uint8_t adxl345_activity_get_threshold (adxl345_sensor *sensor);
-uint8_t adxl345_inactivity_get_threshold (adxl345_sensor *sensor);
-uint8_t adxl345_activity_get_time (adxl345_sensor *sensor);
-uint8_t adxl345_act_inact_get_settings (adxl345_sensor *sensor);
-#define adxl345_activity_is_threshold_relative(settings)	((settings & ADXL345_ACT_RELATIVE) != 0)
-#define adxl345_activity_is_x_enabled(settings)				((settings & ADXL345_ACT_ENABLE_X) != 0)
-#define adxl345_activity_is_y_enabled(settings)				((settings & ADXL345_ACT_ENABLE_Y) != 0)
-#define adxl345_activity_is_z_enabled(settings)				((settings & ADXL345_ACT_ENABLE_Z) != 0)
-#define adxl345_inactivity_is_threshold_relative(settings)	((settings & ADXL345_INACT_RELATIVE) != 0)
-#define adxl345_inactivity_is_x_enabled(settings)			((settings & ADXL345_INACT_ENABLE_X) != 0)
-#define adxl345_inactivity_is_y_enabled(settings)			((settings & ADXL345_INACT_ENABLE_Y) != 0)
-#define adxl345_inactivity_is_z_enabled(settings)			((settings & ADXL345_INACT_ENABLE_Z) != 0)
-uint8_t adxl345_freefall_get_threshold (adxl345_sensor *sensor);
-uint8_t adxl345_freefall_get_time (adxl345_sensor *sensor);
-uint8_t adxl345_tap_get_settings (adxl345_sensor *sensor);
-#define adxl345_tap_is_suppressed(settings)	((settings & ADXL345_TAP_SUPRESS) != 0)
-#define adxl345_tap_is_x_enabled(settings)	((settings & ADXL345_TAP_ENABLE_X) != 0)
-#define adxl345_tap_is_y_enabled(settings)	((settings & ADXL345_TAP_ENABLE_Y) != 0)
-#define adxl345_tap_is_z_enabled(settings)	((settings & ADXL345_TAP_ENABLE_Z) != 0)
-uint8_t adxl345_interrupt_get_involvement (adxl345_sensor *sensor);
-#define adxl345_activity_is_x_involved(involvement) ((involvement & _ADXL345_ACT_X_INV) != 0)
-#define adxl345_activity_is_y_involved(involvement) ((involvement & _ADXL345_ACT_Y_INV) != 0)
-#define adxl345_activity_is_z_involved(involvement)	((involvement & _ADXL345_ACT_Z_INV) != 0)
-#define adxl345_tap_is_x_involved(involvement)		((involvement & _ADXL345_TAP_X_INV) != 0)
-#define adxl345_tap_is_y_involved(involvement)		((involvement & _ADXL345_TAP_Y_INV) != 0)
-#define adxl345_tap_is_z_involved(involvement)		((involvement & _ADXL345_TAP_Z_INV) != 0)
+uint8_t adxl345_get_device_id (adxl345_sensor *sensor)
+{
+	uint8_t id = 0;
+	if (adxl345_read_timeout (sensor, ADXL345_REG_DEVID, &id, 1, false, 1) < sizeof (id))
+	{
+		return 0;
+	}
+
+	return id;
+}
+
+uint8_t adxl345_tap_get_threshold (adxl345_sensor *sensor)
+{
+	uint8_t threshold = 0;
+	if (adxl345_read_timeout (sensor, ADXL345_REG_THRESH_TAP, &threshold, 1, false, 1) < sizeof (threshold))
+	{
+		return 0;
+	}
+
+	return threshold;
+}
+
+uint8_t adxl345_get_offset_x (adxl345_sensor *sensor)
+{
+	uint8_t offset_x = 0;
+	if (adxl345_read_timeout (sensor, ADXL345_REG_OFSX, &offset_x, 1, false, 1) < sizeof (offset_x))
+	{
+		return 0;
+	}
+
+	return offset_x;
+}
+
+uint8_t adxl345_get_offset_y (adxl345_sensor *sensor)
+{
+	uint8_t offset_y = 0;
+	if (adxl345_read_timeout (sensor, ADXL345_REG_OFSY, &offset_y, 1, false, 1) < sizeof (offset_y))
+	{
+		return 0;
+	}
+
+	return offset_y;
+}
+
+uint8_t adxl345_get_offset_z (adxl345_sensor *sensor)
+{
+	uint8_t offset_z = 0;
+	if (adxl345_read_timeout (sensor, ADXL345_REG_OFSZ, &offset_z, 1, false, 1) < sizeof (offset_z))
+	{
+		return 0;
+	}
+
+	return offset_z;
+}
+
+uint8_t adxl345_tap_get_duration (adxl345_sensor *sensor)
+{
+	uint8_t duration = 0;
+	if (adxl345_read_timeout (sensor, ADXL345_REG_DUR, &duration, 1, false, 1) < sizeof (duration))
+	{
+		return 0;
+	}
+
+	return duration;
+}
+
+uint8_t adxl345_tap_get_latent (adxl345_sensor *sensor)
+{
+	uint8_t latent = 0;
+	if (adxl345_read_timeout (sensor, ADXL345_REG_LATENT, &latent, 1, false, 1) < sizeof (latent))
+	{
+		return 0;
+	}
+
+	return latent;
+}
+
+uint8_t adxl345_tap_get_window (adxl345_sensor *sensor)
+{
+	uint8_t window = 0;
+	if (adxl345_read_timeout (sensor, ADXL345_REG_WINDOW, &window, 1, false, 1) < sizeof (window))
+	{
+		return 0;
+	}
+
+	return window;
+}
+
+uint8_t adxl345_activity_get_threshold (adxl345_sensor *sensor)
+{
+	uint8_t threshold = 0;
+	if (adxl345_read_timeout (sensor, ADXL345_REG_THRESH_ACT, &threshold, 1, false, 1) < sizeof (threshold))
+	{
+		return 0;
+	}
+
+	return threshold;
+}
+
+uint8_t adxl345_inactivity_get_threshold (adxl345_sensor *sensor)
+{
+	uint8_t threshold = 0;
+	if (adxl345_read_timeout (sensor, ADXL345_REG_THRESH_INACT, &threshold, 1, false, 1) < sizeof (threshold))
+	{
+		return 0;
+	}
+
+	return threshold;
+}
+
+uint8_t adxl345_inactivity_get_time (adxl345_sensor *sensor)
+{
+	uint8_t time = 0;
+	if (adxl345_read_timeout (sensor, ADXL345_REG_TIME_INACT, &time, 1, false, 1) < sizeof (time))
+	{
+		return 0;
+	}
+
+	return time;
+}
+
+uint8_t adxl345_act_inact_get_settings (adxl345_sensor *sensor)
+{
+	uint8_t settings = 0;
+	if (adxl345_read_timeout (sensor, ADXL345_REG_ACT_INACT_CTL, &settings, 1, false, 1) < sizeof (settings))
+	{
+		return 0;
+	}
+
+	return settings;
+}
+
+uint8_t adxl345_freefall_get_threshold (adxl345_sensor *sensor)
+{
+	uint8_t threshold = 0;
+	if (adxl345_read_timeout (sensor, ADXL345_REG_THRESH_FF, &threshold, 1, false, 1) < sizeof (threshold))
+	{
+		return 0;
+	}
+
+	return threshold;
+}
+
+uint8_t adxl345_freefall_get_time (adxl345_sensor *sensor)
+{
+	uint8_t time = 0;
+	if (adxl345_read_timeout (sensor, ADXL345_REG_TIME_FF, &time, 1, false, 1) < sizeof (time))
+	{
+		return 0;
+	}
+
+	return time;
+}
+
+uint8_t adxl345_tap_get_settings (adxl345_sensor *sensor)
+{
+	uint8_t settings = 0;
+	if (adxl345_read_timeout (sensor, ADXL345_REG_TAP_AXES, &settings, 1, false, 1) < sizeof (settings))
+	{
+		return 0;
+	}
+
+	return settings;
+}
+
+uint8_t adxl345_interrupt_get_involvement (adxl345_sensor *sensor)
+{
+	uint8_t involvement = 0;
+	if (adxl345_read_timeout (sensor, ADXL345_REG_ACT_TAP_STATUS, &involvement, 1, false, 1) < sizeof (involvement))
+	{
+		return 0;
+	}
+
+	return involvement;
+}
+
 // Function for getting BW_RATE
 // Function for getting POWER_CTL
-uint8_t adxl345_get_interrupt_status (adxl345_sensor *sensor);
-uint8_t adxl345_get_interrupt_map (adxl345_sensor *sensor);
-uint8_t adxl345_get_interrupt_source (adxl345_sensor *sensor);
+
+uint8_t adxl345_get_interrupt_status (adxl345_sensor *sensor)
+{
+	uint8_t status = 0;
+	if (adxl345_read_timeout (sensor, ADXL345_REG_INT_ENABLE, &status, 1, false, 1) < sizeof (status))
+	{
+		return 0;
+	}
+
+	return status;
+}
+
+uint8_t adxl345_get_interrupt_map (adxl345_sensor *sensor)
+{
+	uint8_t map = 0;
+	if (adxl345_read_timeout (sensor, ADXL345_REG_INT_MAP, &map, 1, false, 1) < sizeof (map))
+	{
+		return 0;
+	}
+
+	return map;
+}
+
+uint8_t adxl345_get_interrupt_source (adxl345_sensor *sensor)
+{
+	uint8_t source = 0;
+	if (adxl345_read_timeout (sensor, ADXL345_REG_INT_SOURCE, &source, 1, false, 1) < sizeof (source))
+	{
+		return 0;
+	}
+
+	return source;
+}
+
 // Function for getting DATA_FORMAT
 // Function for getting FIFO_CTL
 // Function for getting FIFO_STATUS
@@ -387,13 +560,21 @@ int adxl345_write_timeout (adxl345_sensor *sensor, uint8_t reg_addr, uint8_t com
 
 int adxl345_read (adxl345_sensor *sensor, uint8_t reg_addr, uint8_t *buffer, size_t length, bool no_stop)
 {
-	i2c_write_blocking (sensor->i2c_port, sensor->i2c_addr, &reg_addr, sizeof (reg_addr), no_stop);
+	if (i2c_write_blocking (sensor->i2c_port, sensor->i2c_addr, &reg_addr, sizeof (reg_addr), no_stop) < sizeof (reg_addr))
+	{
+		return 0;
+	}
+
 	return i2c_read_blocking (sensor->i2c_port, sensor->i2c_addr, buffer, length, no_stop);
 }
 
 int adxl345_read_timeout (adxl345_sensor *sensor, uint8_t reg_addr, uint8_t *buffer, size_t length, bool no_stop, unsigned int timeout_s)
 {
 	unsigned int actual_timeout = (timeout_s * 1000 * 1000) / 2;
-	i2c_write_timeout_us (sensor->i2c_port, sensor->i2c_addr, &reg_addr, sizeof (reg_addr), no_stop, actual_timeout);
+	if (i2c_write_timeout_us (sensor->i2c_port, sensor->i2c_addr, &reg_addr, sizeof (reg_addr), no_stop, actual_timeout) < sizeof (reg_addr))
+	{
+		return 0;
+	}
+
 	return i2c_read_timeout_us (sensor->i2c_port, sensor->i2c_addr, buffer, length, no_stop, actual_timeout);
 }
