@@ -28,7 +28,7 @@ int main ()
 	}
 
 	// Starting measurement
-	if (adxl345_power_settings (&sensor, ADXL345_POWER_MEASURE) == false)
+	if (adxl345_start (&sensor) == false)
 	{
 		printf ("Couldn't start measuring");
 	}
