@@ -165,7 +165,7 @@ typedef union
  */
 bool adxl345_init (adxl345_sensor *sensor, i2c_inst_t *i2c_port, uint8_t i2c_addr);
 
-#define adxl345_start(sensor)	adxl345_power_settings(sensor,ADXL345_POWER_MEASURE)
+#define adxl345_start(sensor)	adxl345_power_settings (sensor, ADXL345_POWER_MEASURE)
 
 /*
  * Reads only the acceleration of the given adxl345 sensor
@@ -237,8 +237,8 @@ float adxl345_get_roll (adxl345_axis_data *data);
 float adxl345_get_pitch (adxl345_axis_data *data);
 
 // I think it's easier to use x and y instead of roll and pitch
-#define adxl345_get_rot_x(data) adxl345_get_roll(data)
-#define adxl345_get_rot_y(data) adxl345_get_pitch(data)
+#define adxl345_get_rot_x(data) adxl345_get_roll (data)
+#define adxl345_get_rot_y(data) adxl345_get_pitch (data)
 
 /*
  * Sets the offset on all three axis of the given adxl345 sensor
@@ -256,7 +256,7 @@ bool adxl345_set_offset (adxl345_sensor *sensor, uint8_t x, uint8_t y, uint8_t z
  * sensor	-	adxl345 instance to be written to
  * x		-	Offset on the x-axis (15.6 mg / LSB)
  */
-#define adxl345_set_offset_x(sensor,x)	adxl345_set_offset(sensor,x,0,0)
+#define adxl345_set_offset_x(sensor,x)	adxl345_set_offset (sensor, x, 0, 0)
 
 uint8_t adxl345_get_offset_x (adxl345_sensor *sensor);
 
@@ -266,7 +266,7 @@ uint8_t adxl345_get_offset_x (adxl345_sensor *sensor);
  * sensor	-	adxl345 instance to be written to
  * y		-	Offset on the y-axis (15.6 mg / LSB)
  */
-#define adxl345_set_offset_y(sensor,y)	adxl345_set_offset(sensor,0,y,0)
+#define adxl345_set_offset_y(sensor,y)	adxl345_set_offset (sensor, 0, y, 0)
 
 uint8_t adxl345_get_offset_y (adxl345_sensor *sensor);
 
@@ -276,7 +276,7 @@ uint8_t adxl345_get_offset_y (adxl345_sensor *sensor);
  * sensor	-	adxl345 instance to be written to
  * z		-	Offset on the z-axis (15.6 mg / LSB)
  */
-#define adxl345_set_offset_z(sensor,z)	adxl345_set_offset(sensor,0,0,z)
+#define adxl345_set_offset_z(sensor,z)	adxl345_set_offset (sensor, 0, 0, z)
 
 uint8_t adxl345_get_offset_z (adxl345_sensor *sensor);
 
