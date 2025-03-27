@@ -80,6 +80,7 @@
 #define ADXL345_BW_0_10				1
 #define ADXL345_BW_0_05				0
 #define ADXL345_BW_DEFAULT			ADXL345_BW_50
+#define ADXL345_BW_SPEED_IS_KEY		ADXL345_BW_1600
 
 // Flags for adxl345_power_settings()
 #define ADXL345_POWER_LINK			1<<5
