@@ -223,7 +223,7 @@ short adxl345_get_y (adxl345_axis_data *data);
  */
 short adxl345_get_z (adxl345_axis_data *data);
 
-/*! \brief 
+/*
  * Gets the roll out of the given data
  *
  * data	-	Buffer of data to be evaluated
