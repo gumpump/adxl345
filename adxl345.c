@@ -323,6 +323,7 @@ bool adxl345_fifo_settings (adxl345_sensor *sensor, uint8_t flags, uint8_t sampl
 uint8_t adxl345_get_device_id (adxl345_sensor *sensor)
 {
 	uint8_t id = 0;
+
 	if (adxl345_read_timeout (sensor, ADXL345_REG_DEVID, &id, 1, false, 1) < sizeof (id))
 	{
 		return 0;
@@ -334,6 +335,7 @@ uint8_t adxl345_get_device_id (adxl345_sensor *sensor)
 uint8_t adxl345_tap_get_threshold (adxl345_sensor *sensor)
 {
 	uint8_t threshold = 0;
+
 	if (adxl345_read_timeout (sensor, ADXL345_REG_THRESH_TAP, &threshold, 1, false, 1) < sizeof (threshold))
 	{
 		return 0;
@@ -345,6 +347,7 @@ uint8_t adxl345_tap_get_threshold (adxl345_sensor *sensor)
 uint8_t adxl345_get_offset_x (adxl345_sensor *sensor)
 {
 	uint8_t offset_x = 0;
+
 	if (adxl345_read_timeout (sensor, ADXL345_REG_OFSX, &offset_x, 1, false, 1) < sizeof (offset_x))
 	{
 		return 0;
@@ -356,6 +359,7 @@ uint8_t adxl345_get_offset_x (adxl345_sensor *sensor)
 uint8_t adxl345_get_offset_y (adxl345_sensor *sensor)
 {
 	uint8_t offset_y = 0;
+
 	if (adxl345_read_timeout (sensor, ADXL345_REG_OFSY, &offset_y, 1, false, 1) < sizeof (offset_y))
 	{
 		return 0;
@@ -367,6 +371,7 @@ uint8_t adxl345_get_offset_y (adxl345_sensor *sensor)
 uint8_t adxl345_get_offset_z (adxl345_sensor *sensor)
 {
 	uint8_t offset_z = 0;
+
 	if (adxl345_read_timeout (sensor, ADXL345_REG_OFSZ, &offset_z, 1, false, 1) < sizeof (offset_z))
 	{
 		return 0;
@@ -378,6 +383,7 @@ uint8_t adxl345_get_offset_z (adxl345_sensor *sensor)
 uint8_t adxl345_tap_get_duration (adxl345_sensor *sensor)
 {
 	uint8_t duration = 0;
+
 	if (adxl345_read_timeout (sensor, ADXL345_REG_DUR, &duration, 1, false, 1) < sizeof (duration))
 	{
 		return 0;
@@ -389,6 +395,7 @@ uint8_t adxl345_tap_get_duration (adxl345_sensor *sensor)
 uint8_t adxl345_tap_get_latent (adxl345_sensor *sensor)
 {
 	uint8_t latent = 0;
+
 	if (adxl345_read_timeout (sensor, ADXL345_REG_LATENT, &latent, 1, false, 1) < sizeof (latent))
 	{
 		return 0;
@@ -400,6 +407,7 @@ uint8_t adxl345_tap_get_latent (adxl345_sensor *sensor)
 uint8_t adxl345_tap_get_window (adxl345_sensor *sensor)
 {
 	uint8_t window = 0;
+
 	if (adxl345_read_timeout (sensor, ADXL345_REG_WINDOW, &window, 1, false, 1) < sizeof (window))
 	{
 		return 0;
@@ -411,6 +419,7 @@ uint8_t adxl345_tap_get_window (adxl345_sensor *sensor)
 uint8_t adxl345_activity_get_threshold (adxl345_sensor *sensor)
 {
 	uint8_t threshold = 0;
+
 	if (adxl345_read_timeout (sensor, ADXL345_REG_THRESH_ACT, &threshold, 1, false, 1) < sizeof (threshold))
 	{
 		return 0;
@@ -422,6 +431,7 @@ uint8_t adxl345_activity_get_threshold (adxl345_sensor *sensor)
 uint8_t adxl345_inactivity_get_threshold (adxl345_sensor *sensor)
 {
 	uint8_t threshold = 0;
+
 	if (adxl345_read_timeout (sensor, ADXL345_REG_THRESH_INACT, &threshold, 1, false, 1) < sizeof (threshold))
 	{
 		return 0;
@@ -433,6 +443,7 @@ uint8_t adxl345_inactivity_get_threshold (adxl345_sensor *sensor)
 uint8_t adxl345_inactivity_get_time (adxl345_sensor *sensor)
 {
 	uint8_t time = 0;
+
 	if (adxl345_read_timeout (sensor, ADXL345_REG_TIME_INACT, &time, 1, false, 1) < sizeof (time))
 	{
 		return 0;
@@ -488,6 +499,7 @@ uint8_t adxl345_tap_get_settings (adxl345_sensor *sensor)
 uint8_t adxl345_interrupt_get_involvement (adxl345_sensor *sensor)
 {
 	uint8_t involvement = 0;
+
 	if (adxl345_read_timeout (sensor, ADXL345_REG_ACT_TAP_STATUS, &involvement, 1, false, 1) < sizeof (involvement))
 	{
 		return 0;
@@ -502,6 +514,7 @@ uint8_t adxl345_interrupt_get_involvement (adxl345_sensor *sensor)
 uint8_t adxl345_get_interrupt_status (adxl345_sensor *sensor)
 {
 	uint8_t status = 0;
+
 	if (adxl345_read_timeout (sensor, ADXL345_REG_INT_ENABLE, &status, 1, false, 1) < sizeof (status))
 	{
 		return 0;
@@ -513,6 +526,7 @@ uint8_t adxl345_get_interrupt_status (adxl345_sensor *sensor)
 uint8_t adxl345_get_interrupt_map (adxl345_sensor *sensor)
 {
 	uint8_t map = 0;
+
 	if (adxl345_read_timeout (sensor, ADXL345_REG_INT_MAP, &map, 1, false, 1) < sizeof (map))
 	{
 		return 0;
@@ -571,6 +585,7 @@ int adxl345_read (adxl345_sensor *sensor, uint8_t reg_addr, uint8_t *buffer, siz
 int adxl345_read_timeout (adxl345_sensor *sensor, uint8_t reg_addr, uint8_t *buffer, size_t length, bool no_stop, unsigned int timeout_s)
 {
 	unsigned int actual_timeout = (timeout_s * 1000 * 1000) / 2;
+
 	if (i2c_write_timeout_us (sensor->i2c_port, sensor->i2c_addr, &reg_addr, sizeof (reg_addr), no_stop, actual_timeout) < sizeof (reg_addr))
 	{
 		return 0;

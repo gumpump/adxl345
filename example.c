@@ -24,13 +24,13 @@ int main ()
 	// Initializing the sensor
 	if (adxl345_init (&sensor, I2C_PORT, 0) == false)
 	{
-		printf ("Couldn't initialize sensor");
+		puts ("Couldn't initialize sensor");
 	}
 
 	// Starting measurement
 	if (adxl345_start (&sensor) == false)
 	{
-		printf ("Couldn't start measuring");
+		puts ("Couldn't start measuring");
 	}
 
 	while (1)
