@@ -486,7 +486,6 @@ uint8_t adxl345_get_interrupt_source (adxl345_sensor *sensor);
 #define ADXL345_REG_DATA_BEGIN_Z	ADXL345_REG_DATAZ0
 
 #define ADXL345_REG_DATA_SIZE_AXIS_SINGLE	2
-
 #define ADXL345_REG_DATA_SIZE_AXIS_ALL		6
 
 /*
