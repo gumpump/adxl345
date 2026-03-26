@@ -125,7 +125,7 @@
 #define ADXL345_FIFO_TRIGGER_INT2	1<<5
 #define ADXL345_FIFO_DEFAULT		0
 
-// Indices for adxl345_axis_get_data_raw() and adxl345_axis_get_data_raw_timeout()
+// Indices for adxl345_axis_get_data_single_raw() and adxl345_axis_get_data_single_raw_timeout()
 #define ADXL345_INDEX_X 0
 #define ADXL345_INDEX_Y 1
 #define ADXL345_INDEX_Z 2
@@ -191,7 +191,7 @@ int adxl345_axis_get_data_timeout (adxl345_sensor *sensor, adxl345_axis_data *da
  * sensor	-	adxl345 instance to be read from
  * data		-	Buffer the data will be saved in
  */
-int adxl345_axis_get_data_raw (adxl345_sensor *sensor, uint8_t axis, uint8_t *data);
+int adxl345_axis_get_data_raw (adxl345_sensor *sensor, uint8_t *data);
 
 /*
  * Reads only the acceleration of the given adxl345 sensor with a timeout (in seconds)
@@ -200,7 +200,26 @@ int adxl345_axis_get_data_raw (adxl345_sensor *sensor, uint8_t axis, uint8_t *da
  * data			-	Buffer the data will be saved in
  * timeout_s	-	Amount of time (in seconds) the function tries to read
  */
-int adxl345_axis_get_data_raw_timeout (adxl345_sensor *sensor, uint8_t axis, uint8_t *data, unsigned int timeout_s);
+int adxl345_axis_get_data_raw_timeout (adxl345_sensor *sensor, uint8_t *data, unsigned int timeout_s);
+
+/*
+ * Reads only the acceleration of a single aixs of the given adxl345 sensor
+ *
+ * sensor	-	adxl345 instance to be read from
+ * axis		-	axis to get data of
+ * data		-	Buffer the data will be saved in
+ */
+int adxl345_axis_get_data_single_raw (adxl345_sensor *sensor, uint8_t axis, uint8_t *data);
+
+/*
+ * Reads only the acceleration of a single aixs of the given adxl345 sensor with a timeout (in seconds)
+ *
+ * sensor		-	adxl345 instance to be read from
+ * axis			-	axis to get data of
+ * data			-	Buffer the data will be saved in
+ * timeout_s	-	Amount of time (in seconds) the function tries to read
+ */
+int adxl345_axis_get_data_single_raw_timeout (adxl345_sensor *sensor, uint8_t axis, uint8_t *data, unsigned int timeout_s);
 
 /*
  * Gets the acceleration for the x-axis out of the given data

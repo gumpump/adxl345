@@ -14,6 +14,8 @@
 
 #define ADXL345_TIMEOUT_STD		1
 
+static const uint8_t generic_read_command = ADXL345_REG_DATA_BEGIN_AXIS;
+
 bool adxl345_init (adxl345_sensor *sensor, i2c_inst_t *i2c_port, uint8_t i2c_addr)
 {
 	if (!sensor)
@@ -38,32 +40,40 @@ bool adxl345_init (adxl345_sensor *sensor, i2c_inst_t *i2c_port, uint8_t i2c_add
 
 int adxl345_axis_get_data (adxl345_sensor *sensor, adxl345_axis_data *data)
 {
-	uint8_t command = ADXL345_REG_DATA_BEGIN_AXIS;
-	i2c_write_blocking (sensor->i2c_port, sensor->i2c_addr, &command, sizeof (command), false);
+	i2c_write_blocking (sensor->i2c_port, sensor->i2c_addr, &generic_read_command, sizeof (generic_read_command), false);
 	return i2c_read_blocking (sensor->i2c_port, sensor->i2c_addr, data->raw, ADXL345_REG_DATA_SIZE_AXIS_ALL, false);
 }
 
 int adxl345_axis_get_data_timeout (adxl345_sensor *sensor, adxl345_axis_data *data, unsigned int timeout_s)
 {
-	uint8_t command = ADXL345_REG_DATA_BEGIN_AXIS;
-	unsigned int actual_timeout = (timeout_s * 1000 * 1000) / 2;
-	i2c_write_timeout_us (sensor->i2c_port, sensor->i2c_addr, &command, sizeof (command), false, actual_timeout);
-	return i2c_read_timeout_us (sensor->i2c_port, sensor->i2c_addr, data->raw, ADXL345_REG_DATA_SIZE_AXIS_ALL, false, actual_timeout);
+	i2c_write_timeout_us (sensor->i2c_port, sensor->i2c_addr, &generic_read_command, sizeof (generic_read_command), false, (timeout_s * 1000 * 1000) / 2);
+	return i2c_read_timeout_us (sensor->i2c_port, sensor->i2c_addr, data->raw, ADXL345_REG_DATA_SIZE_AXIS_ALL, false, (timeout_s * 1000 * 1000) / 2);
 }
 
-int adxl345_axis_get_data_raw (adxl345_sensor *sensor, uint8_t axis, uint8_t *data)
+int adxl345_axis_get_data_raw (adxl345_sensor *sensor, uint8_t *data)
+{
+	i2c_write_blocking (sensor->i2c_port, sensor->i2c_addr, &generic_read_command, sizeof (generic_read_command), false);
+	return i2c_read_blocking (sensor->i2c_port, sensor->i2c_addr, data, ADXL345_REG_DATA_SIZE_AXIS_ALL, false);
+}
+
+int adxl345_axis_get_data_raw_timeout (adxl345_sensor *sensor, uint8_t *data, unsigned int timeout_s)
+{
+	i2c_write_timeout_us (sensor->i2c_port, sensor->i2c_addr, &generic_read_command, sizeof (generic_read_command), false, (timeout_s * 1000 * 1000) / 2);
+	return i2c_read_timeout_us (sensor->i2c_port, sensor->i2c_addr, data, ADXL345_REG_DATA_SIZE_AXIS_ALL, false, (timeout_s * 1000 * 1000) / 2);
+}
+
+int adxl345_axis_get_data_single_raw (adxl345_sensor *sensor, uint8_t axis, uint8_t *data)
 {
 	uint8_t command = ADXL345_REG_DATA_BEGIN_AXIS + (axis * 2);
 	i2c_write_blocking (sensor->i2c_port, sensor->i2c_addr, &command, sizeof (command), false);
 	return i2c_read_blocking (sensor->i2c_port, sensor->i2c_addr, data, ADXL345_REG_DATA_SIZE_AXIS_SINGLE, false);
 }
 
-int adxl345_axis_get_data_raw_timeout (adxl345_sensor *sensor, uint8_t axis, uint8_t *data, unsigned int timeout_s)
+int adxl345_axis_get_data_single_raw_timeout (adxl345_sensor *sensor, uint8_t axis, uint8_t *data, unsigned int timeout_s)
 {
 	uint8_t command = ADXL345_REG_DATA_BEGIN_AXIS + (axis * 2);
-	unsigned int actual_timeout = (timeout_s * 1000 * 1000) / 2;
-	i2c_write_timeout_us (sensor->i2c_port, sensor->i2c_addr, &command, sizeof (command), false, actual_timeout);
-	return i2c_read_timeout_us (sensor->i2c_port, sensor->i2c_addr, data, ADXL345_REG_DATA_SIZE_AXIS_SINGLE, false, actual_timeout);
+	i2c_write_timeout_us (sensor->i2c_port, sensor->i2c_addr, &command, sizeof (command), false, (timeout_s * 1000 * 1000) / 2);
+	return i2c_read_timeout_us (sensor->i2c_port, sensor->i2c_addr, data, ADXL345_REG_DATA_SIZE_AXIS_SINGLE, false, (timeout_s * 1000 * 1000) / 2);
 }
 
 short adxl345_get_x (adxl345_axis_data *data)
@@ -239,7 +249,7 @@ bool adxl345_set_bandwidth (adxl345_sensor *sensor, bool low_power, uint8_t band
 
 	command += bandwidth;
 
-	if (adxl345_write_timeout (sensor, ADXL345_REG_BW_RATE, command, false, ADXL345_TIMEOUT_STD) < ADXL345_CMD_SIZE (1))
+	if (adxl345_write_timeout (sensor, ADXL345_REG_BW_RATE, command, false, ADXL345_TIMEOUT_STD) < ADXL345_CMD_SIZE (sizeof (command)))
 	{
 		return false;
 	}
@@ -457,6 +467,7 @@ uint8_t adxl345_inactivity_get_time (adxl345_sensor *sensor)
 uint8_t adxl345_act_inact_get_settings (adxl345_sensor *sensor)
 {
 	uint8_t settings = 0;
+
 	if (adxl345_read_timeout (sensor, ADXL345_REG_ACT_INACT_CTL, &settings, 1, false, ADXL345_TIMEOUT_STD) < sizeof (settings))
 	{
 		return 0;
@@ -468,6 +479,7 @@ uint8_t adxl345_act_inact_get_settings (adxl345_sensor *sensor)
 uint8_t adxl345_freefall_get_threshold (adxl345_sensor *sensor)
 {
 	uint8_t threshold = 0;
+
 	if (adxl345_read_timeout (sensor, ADXL345_REG_THRESH_FF, &threshold, 1, false, ADXL345_TIMEOUT_STD) < sizeof (threshold))
 	{
 		return 0;
@@ -479,6 +491,7 @@ uint8_t adxl345_freefall_get_threshold (adxl345_sensor *sensor)
 uint8_t adxl345_freefall_get_time (adxl345_sensor *sensor)
 {
 	uint8_t time = 0;
+
 	if (adxl345_read_timeout (sensor, ADXL345_REG_TIME_FF, &time, 1, false, ADXL345_TIMEOUT_STD) < sizeof (time))
 	{
 		return 0;
@@ -490,6 +503,7 @@ uint8_t adxl345_freefall_get_time (adxl345_sensor *sensor)
 uint8_t adxl345_tap_get_settings (adxl345_sensor *sensor)
 {
 	uint8_t settings = 0;
+
 	if (adxl345_read_timeout (sensor, ADXL345_REG_TAP_AXES, &settings, 1, false, ADXL345_TIMEOUT_STD) < sizeof (settings))
 	{
 		return 0;
@@ -540,6 +554,7 @@ uint8_t adxl345_get_interrupt_map (adxl345_sensor *sensor)
 uint8_t adxl345_get_interrupt_source (adxl345_sensor *sensor)
 {
 	uint8_t source = 0;
+
 	if (adxl345_read_timeout (sensor, ADXL345_REG_INT_SOURCE, &source, 1, false, ADXL345_TIMEOUT_STD) < sizeof (source))
 	{
 		return 0;
@@ -586,12 +601,10 @@ int adxl345_read (adxl345_sensor *sensor, uint8_t reg_addr, uint8_t *buffer, siz
 
 int adxl345_read_timeout (adxl345_sensor *sensor, uint8_t reg_addr, uint8_t *buffer, size_t length, bool no_stop, unsigned int timeout_s)
 {
-	unsigned int actual_timeout = (timeout_s * 1000 * 1000) / 2;
-
-	if (i2c_write_timeout_us (sensor->i2c_port, sensor->i2c_addr, &reg_addr, sizeof (reg_addr), no_stop, actual_timeout) < sizeof (reg_addr))
+	if (i2c_write_timeout_us (sensor->i2c_port, sensor->i2c_addr, &reg_addr, sizeof (reg_addr), no_stop, (timeout_s * 1000 * 1000) / 2) < sizeof (reg_addr))
 	{
 		return 0;
 	}
 
-	return i2c_read_timeout_us (sensor->i2c_port, sensor->i2c_addr, buffer, length, no_stop, actual_timeout);
+	return i2c_read_timeout_us (sensor->i2c_port, sensor->i2c_addr, buffer, length, no_stop, (timeout_s * 1000 * 1000) / 2);
 }
